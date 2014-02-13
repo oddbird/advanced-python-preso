@@ -1,0 +1,162 @@
+- pattern:
+  - introduce a feature
+  - a toy example
+  - real example(s)
+  - cautions?
+  - link to the docs
+
+- covering a lot of features in a short time
+  - can't cover them in full depth, but hopefully whet appetite
+
+- all code examples and features are Python 3 unless otherwise mentioned
+  - will try to note important Py2 differences
+
+- list of features
+
+* decorators
+  - functions are first-class objects, just like any other object
+  - a decorator is a function that:
+    - accepts a function as argument
+    - returns a function
+  - useful to add pre- and post- behaviors to a function
+  - toy example: print 'before!' and 'after!'
+  - first show example without decorator syntax, then with
+  - example: memoize decorator
+    - using functools.wraps to preserve name, etc when returning wrapper function
+  - decorators with arguments
+    - really a decorator factory
+    - decorators that can be called with or without args
+  - example: login-required view decorator
+  - example: sort decorator
+    - decorators are a powerful combination with lazy return values
+  - caution: using decorators for registration introduces import side-effect
+    - a decorator used on a function at module scope is module-scope code
+    - code at module scope may be executed more than once
+    - safest not to mutate state outside the module in a decorator
+    - read http://docs.pylonsproject.org/projects/pyramid/en/latest/designdefense.html#application-programmers-don-t-control-the-module-scope-codepath-import-time-side-effects-are-evil
+    - look at Venusian for alternative pattern for configuration decorators
+  - caution: can hurt testability
+    - especially if you modify the argument signature or return values
+    - the decorator becomes an inseparable part of the function
+    - so don't use decorators unless:
+      - the decorated version of the function is:
+        - equally testable
+        - the only version you need
+  - docs: http://docs.python.org/3/glossary.html#term-decorator
+
+** class decorators
+   - you can also decorate classes
+   - same concept: function that takes a class and returns a class
+   - toy example: print 'created a Foo!' for every new instance
+   - example: mock.patch decorator
+     - decorates all test methods of a test class
+   - caution: either creates a new class or modifies existing one in place
+     - results can be very different if someone uses it without @ syntax
+     - safest is probably a dynamic subclass
+
+* context managers
+  - like decorators, allow for before/after actions
+    - but around any arbitrary block of code, not just around a function
+  - good replacement for try/finally
+    - "guaranteed" cleanup
+  - toy example: print "enter", "normal exit", or "exception"
+  - example: opening files
+    - demonstrate change in code from using try/finally to context manager
+    - can get a handle to the context manager instance
+  - example: Django's transaction.atomic
+  - example: mock.patch, again
+  - APIs that can be used as decorators or context managers!
+  - create simple context managers using contextlib.contextmanager decorator
+    - note the "yield" keyword; we'll see it again when we talk generators!
+    - caution: you still need try/finally if you want to handle exceptions!
+  - cautions: None!
+    - context managers are awesome
+    - use them anywhere you need to manage resource lifecycles
+  - docs: http://docs.python.org/3/reference/datamodel.html#context-managers
+
+* descriptors
+  - totally customize the behavior of an object attribute
+    - allows implementing getters/setters while still acting like a simple attribute
+    - in Python, simple attribute access is more common than explicit getters/setters
+  - show default behavior of attribute get, set, delete
+  - toy example: print "getting X", "setting X to Y", "deleting X"
+  - more commonly used via 'property' builtin
+  - example: attribute that errors if set to anything other than True or False
+    - use @property and @propname.setter
+    - show alternative with calling property directly, not as a decorator
+  - example: Django ORM related-objects attributes
+  - Py2: only usable with new-style classes (inherit object)
+  - docs: http://docs.python.org/3/howto/descriptor.html
+
+* iterators
+  - In Python, you iterate over sequences using "for x in some_sequence:"
+  - So if we have a list: "numbers = [1, 2, 3]; for x in numbers: print x * 2"
+  - But it's not just lists or other built-in types! You can make any type iterable.
+  - Define terms: "iterable" vs "iterator"
+    - An "iterable" is any container that can be iterated over
+      - list, set, tuple, dict, any custom class with an __iter__() method...
+    - An "iterator" is the object that actually does the iterating
+      - usually behind the scenes
+        - the thing returned by an __iter__() method
+        - has a .next() method
+          - returns next element each time it is called
+          - raises StopIteration if there are no more elements
+        - should also have an __iter__() method that returns itself
+          - allows an iterator to act as an iterable
+  - play with list, iter(list) in shell
+    - each call to iter(list) returns a new iterator over elements of the same list
+      - (this is how nested iterations over the same list work)
+    - repeatedly call .next() on iterator; get elements, then StopIteration
+      - this is exactly what "for ..." does internally
+  - example: Fibonacci class
+  - docs: http://docs.python.org/3/tutorial/classes.html#iterators
+  - good to understand this, but in practice you'll most often use...
+
+* generators
+  - more compact syntax for creating a function that returns an iterator
+  - lazily evaluated
+    - useful for iterating over very long, or even infinite, sequences
+  - anything you can do with a generator, you can do with a custom iterator class
+    - generators are just more convenient to write
+  - toy example: just a sequential string of yields
+    - function containing yield returns a generator object
+      - which is an iterator (has a .next() method)
+      - each call of .next() re-enters the generator function and continues
+        execution until the next yield
+  - rewrite Fibonacci class as a generator function
+    - this time we can just let it be infinite
+    - introduce itertools
+      - use takewhile to get just elements under 100
+      - use ifilter to narrow down to only odd elements
+  - example: processing elements from very large file without exhausting memory
+  - docs: http://docs.python.org/3/tutorial/classes.html#generators
+
+** generator expressions
+   - most compact way to write a generator
+   - similar syntax to list comprehensions
+     - list comps create a list from some sequence:
+       - [x*2 for x in [1, 2, 3]]
+     - generator expressions create a generator from some sequence:
+       - (x*2 for x in [1, 2, 3])
+   - useful for applying lazy transformations to another generator
+     - example: double every element in the fibonacci sequence
+   - docs: http://docs.python.org/3/tutorial/classes.html#generator-expressions
+
+* metaclasses
+  - customize the creation of a class
+  - classes are objects just like any other Python object
+  - that means a class, like any other object, is an instance of some other type!
+    - example with 'class Foo: pass; Foo.__class__`
+    - a class is an instance of the type 'type'
+    - in fact, you can construct classes dynamically by just instantiating a type()
+      - 'class Foo: a = 1' is "type('Foo', (object,), {'a': 1})"
+        - show that methods are just function objects in the namespace dict
+  - 'type' is called a "metaclass", because it's the "class of a class"
+  - you can make a class be an instance of your own metaclass type instead!
+    - subclass type, define the __new__ method
+  - toy example: print class attribute dictionary on class creation
+  - example: interface checking subclasses
+  - example: Django ORM model classes
+    - easier ordering with __prepare__ classmethod
+  - Py2: __metaclass__ instead of kwarg, no __prepare__ available
+  - docs: http://docs.python.org/3/reference/datamodel.html#customizing-class-creation
