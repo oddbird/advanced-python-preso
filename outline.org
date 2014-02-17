@@ -1,15 +1,17 @@
-- pattern:
+- (.5m) me
+
+- (1.5m) pattern:
   - introduce a feature
   - a toy example
   - real example(s)
   - cautions?
   - link to the docs
-
-- covering a lot of features in a short time
-  - can't cover them in full depth, but hopefully whet appetite
-
-- all code examples and features are Python 3 unless otherwise mentioned
-  - will try to note important Py2 differences
+    - links will be in online slides
+    - slides linked at end
+  - covering a lot of features in a short time
+    - can't cover them in full depth, but hopefully whet appetite
+  - all code examples and features are Python 3 unless otherwise mentioned
+    - will try to note important Py2 differences
 
 - list of features
 
