@@ -1,6 +1,7 @@
 - (.5m) me
 
-- (1.5m) pattern:
+- (1.5m) this talk:
+  - list of features
   - introduce a feature
   - a toy example
   - real example(s)
@@ -13,7 +14,6 @@
   - all code examples and features are Python 3 unless otherwise mentioned
     - will try to note important Py2 differences
 
-- list of features
 
 * decorators
   - functions are first-class objects, just like any other object
