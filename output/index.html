@@ -7,4 +7,83 @@
   <li><a href="http://www.oddbird.net" class="org url">oddbird.net</a></li>
   <li><a href="https://twitter.com/carljm" rel="me">@carljm</a></li>
 </ul>
-</div></p></div><div class="step" step="1" id="thistalk" data-reveal="1" data-x="1600" data-y="0"><h1 id="this-talk">This talk</h1><ul><li>Decorators</li><li>Context managers</li><li>Descriptors</li><li>Iterators</li><li>Generators</li><li>Metaclasses</li></ul></div><div class="step" step="2" data-reveal="1" data-x="3200" data-y="0"><h1 id="id1">This talk</h1><ul><li>Introduce a feature</li><li>Toy example</li><li>Real example(s)</li><li>Cautions?</li><li>Link to docs</li><li>Just a taste!</li><li>Python 3</li></ul></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
+</div></p></div><div class="step" step="1" id="thistalk" data-reveal="1" data-x="1600" data-y="0"><h1 id="this-talk">This talk</h1><ul><li>Decorators</li><li>Context managers</li><li>Descriptors</li><li>Iterators</li><li>Generators</li><li>Metaclasses</li></ul></div><div class="step" step="2" data-reveal="1" data-x="3200" data-y="0"><h1 id="id1">This talk</h1><ul><li>Introduce a feature</li><li>Toy example</li><li>Real example(s)</li><li>Cautions?</li><li>Link to docs</li><li>Just a taste!</li><li>Python 3</li></ul><div class="notes"><p>No stress; doc links will be live in online slides.</p><p>All code is Py3, but will note Py2 differences.</p></div></div><div class="step" step="3" data-reveal="1" data-x="4800" data-y="0"><h1 id="me">Me</h1><ul><li>Writing Python since 2002.</li><li>Professionally since 2007.</li><li>Mostly web development.</li><li>OSS: pip, virtualenv, Django</li></ul></div><div class="step" step="4" data-x="6400" data-y="0"><h1 id="decorators">Decorators</h1><p>Functions are first class:</p><pre class="highlight code pycon"><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">
+</span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">call_twice</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">func</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">func</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="go">
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">call_twice</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="go">Hi!
+Hi!</span></pre><div class="notes"><p>We can pass a function around like any other object.</p><p>Create a function that prints "Hi!"</p><p>Pass it as an argument to another function (note lack of parens; with parens
+we'd be calling the function and passing in its return value, which is
+None).</p><p>Then call it by another name, twice (now we have parens!)</p></div></div><div class="step" step="5" data-reveal="1" data-x="8000" data-y="0"><h1 id="decorator">Decorator</h1><p>A function that takes a function as an argument, and returns a function.</p><pre class="highlight code pycon"><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">def</span> <span class="nf">decorated</span><span class="p">():</span>
+<span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
+<span class="gp">... </span>       <span class="n">func</span><span class="p">()</span>
+<span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="n">decorated</span>
+<span class="go">
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span> <span class="o">=</span> <span class="n">noisy</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="go">
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span><span class="p">()</span>
+<span class="go">Before
+Hi!
+After</span></pre><div class="notes"><p>We pass in say_hi to noisy, and get back the function "decorated"; when we
+call it, we get the Before, then the function we passed in (say_hi) is
+called, then we get After.</p><p>The function "decorated" is a closure; it "closes over" the value of the
+variable "func" in its containing scope.</p></div></div><div class="step" step="6" data-x="9600" data-y="0"><p>Decorator syntax:</p><pre class="highlight code python"><span class="nd">@noisy</span>
+<span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span></pre><p>is equivalent to:</p><pre class="highlight code python"><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
+
+<span class="n">say_hi</span> <span class="o">=</span> <span class="n">noisy</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span></pre><div class="notes"><p>If we don't need the original (undecorated) function.</p></div></div><div class="step" step="7" data-x="11200" data-y="0"><p>Either way:</p><pre class="highlight code pycon"><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span><span class="p">()</span>
+<span class="go">Before
+Hi!
+After</span></pre></div><div class="step" step="8" data-x="12800" data-y="0"><p>But:</p><pre class="highlight code pycon"><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
+<span class="go">&lt;function noisy.&lt;locals&gt;.decorated at 0x7f097b7263b0&gt;
+
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="go">Help on function decorated in module __main__:
+
+decorated()</span></pre></div><div class="step" step="9" data-x="14400" data-y="0"><p>Fixing <tt>repr()</tt> and <tt>help()</tt>:</p><pre class="highlight code python"><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">decorated</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
+        <span class="n">func</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">decorated</span></pre><div class="notes"><p>Python standard library has a decorator that helps us make decorators!</p><p>Copies the function name and docstring of the decorated function onto the
+decorator, so it isn't obscured.</p></div></div><div class="step" step="10" data-x="16000" data-y="0"><p>Fixed!</p><pre class="highlight code pycon"><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
+<span class="go">&lt;function say_hi at 0x7f097b73a4d0&gt;
+
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="go">Help on function say_hi in module __main__:
+
+say_hi()</span></pre></div><div class="step" step="11" data-x="17600" data-y="0"><p>Let's try our decorator on another function:</p><pre class="highlight code pycon"><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">square</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+<span class="gp">...</span>
+<span class="go">
+</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">square</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):
+</span>  File <span class="nb">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">TypeError</span>: <span class="n">decorated() takes 0 positional arguments but</span>
+<span class="go">           1 was given</span></pre><p>Oops!</p></div><div class="step" step="12" data-x="19200" data-y="0"><p>Use <tt>*args</tt> and <tt>**kwargs</tt> to write decorators that can wrap functions
+taking any arguments:</p><pre class="highlight code python"><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
+        <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">decorated</span></pre><div class="notes"><p>Depends on the type of decorators. Some decorators might look at or even
+change the arguments, so this total flexibility wouldn't work.</p></div></div><div class="step" step="13" data-x="20800" data-y="0"><p>Decorators that take arguments:</p></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
