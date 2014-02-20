@@ -7,7 +7,7 @@
   <li><a href="http://www.oddbird.net" class="org url">oddbird.net</a></li>
   <li><a href="https://twitter.com/carljm" rel="me">@carljm</a></li>
 </ul>
-</div></p></div><div class="step" step="1" id="thistalk" data-reveal="1" data-x="1600" data-y="0"><h1 id="this-talk">This talk</h1><ul><li>Decorators</li><li>Context managers</li><li>Descriptors</li><li>Iterators</li><li>Generators</li><li>Metaclasses</li></ul></div><div class="step" step="2" data-reveal="1" data-x="3200" data-y="0"><h1 id="id1">This talk</h1><ul><li>Introduce a feature</li><li>Toy example</li><li>Real example(s)</li><li>Cautions?</li><li>Link to docs</li><li>Just a taste!</li><li>Python 3</li></ul><div class="notes"><p>No stress; doc links will be live in online slides.</p><p>All code is Py3, but will note Py2 differences.</p></div></div><div class="step" step="3" data-reveal="1" data-x="4800" data-y="0"><h1 id="me">Me</h1><ul><li>Writing Python since 2002.</li><li>Professionally since 2007.</li><li>Mostly web development.</li><li>OSS: pip, virtualenv, Django</li></ul></div><div class="step" step="4" data-x="6400" data-y="0"><h1 id="decorators">Decorators</h1><p>Functions are first class:</p><pre class="highlight code pycon"><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+</div></p></div><div class="step" step="1" id="thistalk" data-reveal="1" data-x="1600" data-y="0"><h1 id="this-talk">This talk</h1><ul><li>Decorators</li><li>Context managers</li><li>Descriptors</li><li>Iterators</li><li>Generators</li><li>Metaclasses</li></ul></div><div class="step" step="2" data-reveal="1" data-x="3200" data-y="0"><h1 id="how">How</h1><ul><li>Introduce a feature</li><li>Toy example</li><li>Real example(s)</li><li>Just a taste!</li><li>Cautions?</li><li>Link to docs</li><li>Python 3</li></ul><div class="notes"><p>No stress; doc links will be live in online slides.</p><p>All code is Py3, but will note Py2 differences.</p></div></div><div class="step" step="3" data-reveal="1" data-x="4800" data-y="0"><h1 id="me">Me</h1><ul><li>Writing Python since 2002.</li><li>Professionally since 2007.</li><li>Mostly web development.</li><li>OSS: pip, virtualenv, Django</li></ul></div><div class="step" step="4" data-x="6400" data-y="0"><h1 id="decorators">Decorators</h1><p>Functions are first class:</p><pre class="highlight code pycon"><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="go">
@@ -86,4 +86,51 @@ taking any arguments:</p><pre class="highlight code python"><span class="k">def<
         <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">decorated</span></pre><div class="notes"><p>Depends on the type of decorators. Some decorators might look at or even
-change the arguments, so this total flexibility wouldn't work.</p></div></div><div class="step" step="13" data-x="20800" data-y="0"><p>Decorators that take arguments:</p></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
+change the arguments, so this total flexibility wouldn't work.</p></div></div><div class="step" step="13" data-x="20800" data-y="0"><p>A real example:</p><pre class="highlight code python"><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">'/login/'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">view_func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">decorated</span>
+
+<span class="nd">@login_required</span>
+<span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c"># ...</span></pre><div class="notes"><p>Simplified from the actual implementation.</p><p>Here we are hardcoding the login URL to redirect to.</p></div></div><div class="step" step="14" data-x="22400" data-y="0"><p>A decorator that takes arguments:</p><pre class="highlight code python"><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">login_url</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">actual_decorator</span><span class="p">(</span><span class="n">view_func</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">login_url</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">view_func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">decorated</span>
+    <span class="k">return</span> <span class="n">actual_decorator</span>
+
+<span class="nd">@login_required</span><span class="p">(</span><span class="s">'/login/'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c"># ...</span></pre><div class="notes"><p>A decorator that takes arguments is really a decorator factory: a function
+that returns a decorator.</p><p>And a decorator, of course, is a function that returns a function: so we end
+up with double-nested closures.</p></div></div><div class="step" step="15" data-x="24000" data-y="0"><p>A decorator that may or may not take arguments:</p><pre class="highlight code python"><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">login_url</span><span class="o">=</span><span class="s">'/login/'</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">actual_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">login_url</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">decorated</span>
+    <span class="k">if</span> <span class="n">view_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">actual_decorator</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">actual_decorator</span>
+
+ <span class="nd">@login_required</span>
+ <span class="k">def</span> <span class="nf">view_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+     <span class="c"># ...</span>
+
+ <span class="nd">@login_required</span><span class="p">(</span><span class="n">login_url</span><span class="o">=</span><span class="s">'/other_login/'</span><span class="p">)</span>
+ <span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+     <span class="c"># ...</span></pre><div class="notes"><p>Combining the last two forms of decorators, returning either a decorator, or
+an already-decorated view function, depending what arguments we get.</p><p>Could avoid the implementation complexity if we didn't mind a pair of empty
+parens in the first usage, but requiring those makes it easier to use the
+decorator wrong.</p><p>This requires passing in login_url as a keyword argument, we could be even
+cleverer if we want by type-checking the first argument (is it a function?
+is it a string?)</p></div></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>

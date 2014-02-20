@@ -36,13 +36,14 @@ This talk
 
 * Metaclasses
 
+.. 30 seconds.
 
 ----
 
 :data-reveal: 1
 
-This talk
----------
+How
+----
 
 * Introduce a feature
 
@@ -50,11 +51,11 @@ This talk
 
 * Real example(s)
 
+* Just a taste!
+
 * Cautions?
 
 * Link to docs
-
-* Just a taste!
 
 * Python 3
 
@@ -63,6 +64,8 @@ This talk
    No stress; doc links will be live in online slides.
 
    All code is Py3, but will note Py2 differences.
+
+.. 45 seconds.
 
 ----
 
@@ -78,6 +81,8 @@ Me
 * Mostly web development.
 
 * OSS: pip, virtualenv, Django
+
+.. 30 seconds.
 
 ----
 
@@ -278,8 +283,94 @@ taking any arguments:
 
 ----
 
-Decorators that take arguments:
+A real example:
 
+.. code:: python
+
+   def login_required(view_func):
+       @wraps(view_func)
+       def decorated(request, *args, **kwargs):
+           if not request.user.is_authenticated():
+               return redirect('/login/')
+           return view_func(request, *args, **kwargs)
+       return decorated
+
+   @login_required
+   def edit_profile(request):
+       # ...
+
+.. note::
+
+   Simplified from the actual implementation.
+
+   Here we are hardcoding the login URL to redirect to.
+
+----
+
+A decorator that takes arguments:
+
+.. code:: python
+
+   def login_required(login_url):
+       def actual_decorator(view_func):
+           @wraps(view_func)
+           def decorated(request, *args, **kwargs):
+               if not request.user.is_authenticated():
+                   return redirect(login_url)
+               return view_func(request, *args, **kwargs)
+           return decorated
+       return actual_decorator
+
+   @login_required('/login/')
+   def edit_profile(request):
+       # ...
+
+.. note::
+
+   A decorator that takes arguments is really a decorator factory: a function
+   that returns a decorator.
+
+   And a decorator, of course, is a function that returns a function: so we end
+   up with double-nested closures.
+
+----
+
+A decorator that may or may not take arguments:
+
+.. code:: python
+
+   def login_required(view_func=None, login_url='/login/'):
+       def actual_decorator(func):
+           @wraps(func)
+           def decorated(request, *args, **kwargs):
+               if not request.user.is_authenticated():
+                   return redirect(login_url)
+               return func(request, *args, **kwargs)
+           return decorated
+       if view_func is not None:
+           return actual_decorator(view_func)
+       return actual_decorator
+
+    @login_required
+    def view_profile(request):
+        # ...
+
+    @login_required(login_url='/other_login/')
+    def edit_profile(request):
+        # ...
+
+.. note::
+
+   Combining the last two forms of decorators, returning either a decorator, or
+   an already-decorated view function, depending what arguments we get.
+
+   Could avoid the implementation complexity if we didn't mind a pair of empty
+   parens in the first usage, but requiring those makes it easier to use the
+   decorator wrong.
+
+   This requires passing in login_url as a keyword argument, we could be even
+   cleverer if we want by type-checking the first argument (is it a function?
+   is it a string?)
 
 .. |hcard| raw:: html
 
