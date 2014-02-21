@@ -123,7 +123,7 @@ Functions are first class:
 :data-reveal: 1
 
 Decorator
-=========
+---------
 
 A function that takes a function as an argument, and returns a function.
 
@@ -154,22 +154,29 @@ A function that takes a function as an argument, and returns a function.
 
 ----
 
-Decorator syntax:
+:data-emphasize-lines: 4,5
+
+Decorator syntax
+----------------
+
+In place of:
 
 .. code:: python
-
-   @noisy
-   def say_hi():
-       print("Hi!")
-
-is equivalent to:
-
-.. code:: python
+   :number-lines:
 
    def say_hi():
        print("Hi!")
 
    say_hi = noisy(say_hi)
+
+we can write:
+
+.. code:: python
+   :number-lines:
+
+   @noisy
+   def say_hi():
+       print("Hi!")
 
 .. note::
 
@@ -178,6 +185,7 @@ is equivalent to:
 ----
 
 Either way:
+-----------
 
 .. code:: pycon
 
@@ -189,22 +197,25 @@ Either way:
 ----
 
 But:
+----
 
+.. for some reason doctest chokes on the help() call here
+.. ignore-next-block
 .. code:: pycon
 
    >>> say_hi
-   <function noisy.<locals>.decorated at 0x7f097b7263b0>
+   <function noisy.<locals>.decorated at 0x...>
 
    >>> help(say_hi)
-   Help on function decorated in module __main__:
-
+   Help on function decorated:
    decorated()
 
 ----
 
 :data-emphasize-lines: 1,4
 
-Fixing ``repr()`` and ``help()``:
+Fixing ``repr()`` and ``help()``
+--------------------------------
 
 .. code:: python
    :number-lines:
@@ -229,6 +240,7 @@ Fixing ``repr()`` and ``help()``:
 ----
 
 Fixed!
+------
 
 .. code:: pycon
 
@@ -238,16 +250,16 @@ Fixed!
    ...
 
    >>> say_hi
-   <function say_hi at 0x7f097b73a4d0>
+   <function say_hi at 0x...>
 
    >>> help(say_hi)
-   Help on function say_hi in module __main__:
-
+   Help on function say_hi:
    say_hi()
 
 ----
 
-Let's try our decorator on another function:
+Let's try another:
+------------------
 
 .. code:: pycon
 
@@ -263,13 +275,16 @@ Let's try our decorator on another function:
               1 was given
 
 Oops!
+-----
 
 ----
 
 :data-emphasize-lines: 3,5
 
-Use ``*args`` and ``**kwargs`` to write decorators that can wrap functions
-taking any arguments:
+Use ``*args`` and ``**kwargs``
+------------------------------
+
+to write decorators that can wrap any function signature:
 
 .. code:: python
    :number-lines:
@@ -289,7 +304,8 @@ taking any arguments:
 
 ----
 
-A real example:
+A real example
+--------------
 
 .. code:: python
 
@@ -303,7 +319,7 @@ A real example:
 
    @login_required
    def edit_profile(request):
-       # ...
+       pass # ...
 
 .. note::
 
@@ -313,9 +329,13 @@ A real example:
 
 ----
 
-A decorator that takes arguments:
+:data-emphasize-lines: 2,9
+
+Configurable decorators
+-----------------------
 
 .. code:: python
+   :number-lines:
 
    def login_required(login_url):
        def actual_decorator(view_func):
@@ -329,7 +349,7 @@ A decorator that takes arguments:
 
    @login_required('/login/')
    def edit_profile(request):
-       # ...
+       pass # ...
 
 .. note::
 
@@ -341,9 +361,13 @@ A decorator that takes arguments:
 
 ----
 
-A decorator that may or may not take arguments:
+:data-emphasize-lines: 9,10
+
+Optionally configurable
+-----------------------
 
 .. code:: python
+   :number-lines:
 
    def login_required(view_func=None, login_url='/login/'):
        def actual_decorator(func):
@@ -357,13 +381,13 @@ A decorator that may or may not take arguments:
            return actual_decorator(view_func)
        return actual_decorator
 
-    @login_required
-    def view_profile(request):
-        # ...
+   @login_required
+   def view_profile(request):
+       pass # ...
 
-    @login_required(login_url='/other_login/')
-    def edit_profile(request):
-        # ...
+   @login_required(login_url='/other_login/')
+   def edit_profile(request):
+       pass # ...
 
 .. note::
 

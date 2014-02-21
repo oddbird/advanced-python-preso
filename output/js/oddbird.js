@@ -15,15 +15,11 @@ $(function () {
   $('.step').each(function () {
     var slide = $(this);
     var emph = slide.attr('data-emphasize-lines');
-    var linenos = slide.find('.code .ln');
+    var linenos = slide.find('.code .ln').html('&nbsp;');
     if (emph) {
       emph.split(',').forEach(function (num) {
-        // if the line numbers go into double digits, pad single digits with
-        // spaces to avoid matching within a double-digit line number
-        if (linenos.length > 9 && num.length === 1) { num = ' ' + num + ' '; }
-        linenos.filter(':contains(' + num + ')').addClass('emphasized');
+        linenos.eq(parseInt(num, 10)-1).addClass('emphasized');
       });
     }
-    linenos.html('&nbsp;');
   });
 });
