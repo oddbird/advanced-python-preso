@@ -559,6 +559,83 @@ Writing a context manager
 
 ----
 
+:data-emphasize-lines-step: 7,9,13,17
+:data-kill-linenos: 1
+
+Exception handling
+------------------
+
+.. code:: pycon
+   :number-lines:
+
+   >>> class NoisyCM():
+   ...     def __enter__(self):
+   ...         print("Entering!")
+   ...
+   ...     def __exit__(self, exc_type, exc_value, traceback):
+   ...         print("Exiting!")
+   ...         if exc_type is not None:
+   ...             print("Caught {}".format(exc_type.__name__))
+   ...             return True
+
+   >>> with NoisyCM():
+   ...     print("Inside!")
+   ...     raise ValueError
+   Entering!
+   Inside!
+   Exiting!
+   Caught ValueError
+
+----
+
+:data-emphasize-lines-step: 1,3,7,8
+
+Convenience method
+------------------
+
+.. code:: python
+   :number-lines:
+
+   from contextlib import contextmanager
+
+   @contextmanager
+   def my_open(filename, mode='r'):
+       fh = open(filename, mode)
+       try:
+           yield fh
+       finally:
+           fh.close()
+
+.. note::
+
+   For simple context managers, defining a class with two methods is a lot of
+   boilerplate; contextlib.contextmanager streamlines it.
+
+   Uses one feature we've seen - a decorator! and another we will look at
+   shortly, a generator (yield statement).
+
+   Whatever value we yield goes to the with statement's 'as' clause; after the
+   with block executes, execution resumes after the yield.
+
+   In this case any exceptions from inside the with block are re-raised at the
+   point of the yield, so if we want unconditional cleanup we still need to use
+   a try/finally.
+
+----
+
+:data-reveal: 1
+
+Cautions
+--------
+
+* None!
+
+* Context managers are awesome.
+
+* Use them anywhere you need to manage resource life-cycles; setup/teardown.
+
+----
+
 :id: questions
 
 Questions?
@@ -566,9 +643,11 @@ Questions?
 
 * `oddbird.net/advanced-python-preso`_
 * `docs.python.org/3/glossary.html#term-decorator`_
+* `docs.python.org/3/reference/datamodel.html#context-managers`_
 
 .. _oddbird.net/advanced-python-preso: http://oddbird.net/advanced-python-preso
 .. _docs.python.org/3/glossary.html#term-decorator: http://docs.python.org/3/glossary.html#term-decorator
+.. _docs.python.org/3/reference/datamodel.html#context-managers: http://docs.python.org/3/reference/datamodel.html#context-managers
 
 |hcard|
 

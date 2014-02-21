@@ -176,7 +176,36 @@ that renders a queryset in its template.</p><p>(Note: needs error handling.)</p>
 manager. But if it didn't, here's a simplified example of how we could
 implement a context manager to manage opening and closing a file.</p><p>We implement two methods, <tt>__enter__</tt> and <tt>__exit__</tt>. The return value
 of <tt>__enter__</tt> can be anything we like; the user of the context manager
-can get access to it via the <tt>as</tt> keyword.</p></div></div><div class="step" step="21" id="questions" data-x="33600" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/glossary.html#term-decorator">docs.python.org/3/glossary.html#term-decorator</a></li></ul><p><div class="vcard">
+can get access to it via the <tt>as</tt> keyword.</p></div></div><div class="step" step="21" data-emphasize-lines-step="7,9,13,17" data-kill-linenos="1" data-x="33600" data-y="0"><h1 id="exception-handling">Exception handling</h1><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">NoisyCM</span><span class="p">():</span>
+<span class="ln"> 2 </span><span class="gp">... </span>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ln"> 3 </span><span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">"Entering!"</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="gp">...</span>
+<span class="ln"> 5 </span><span class="gp">... </span>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+<span class="ln"> 6 </span><span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">"Exiting!"</span><span class="p">)</span>
+<span class="ln"> 7 </span><span class="gp">... </span>        <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+<span class="ln"> 8 </span><span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">"Caught {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exc_type</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+<span class="ln"> 9 </span><span class="gp">... </span>            <span class="k">return</span> <span class="bp">True</span>
+<span class="ln">10 </span><span class="go">
+</span><span class="ln">11 </span><span class="go"></span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">NoisyCM</span><span class="p">():</span>
+<span class="ln">12 </span><span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Inside!"</span><span class="p">)</span>
+<span class="ln">13 </span><span class="gp">... </span>    <span class="k">raise</span> <span class="ne">ValueError</span>
+<span class="ln">14 </span><span class="go">Entering!
+</span><span class="ln">15 </span><span class="go">Inside!
+</span><span class="ln">16 </span><span class="go">Exiting!
+</span><span class="ln">17 </span><span class="go">Caught ValueError</span></pre></div><div class="step" step="22" data-emphasize-lines-step="1,3,7,8" data-x="35200" data-y="0"><h1 id="convenience-method">Convenience method</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="ln"> 2 </span>
+<span class="ln"> 3 </span><span class="nd">@contextmanager</span>
+<span class="ln"> 4 </span><span class="k">def</span> <span class="nf">my_open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'r'</span><span class="p">):</span>
+<span class="ln"> 5 </span>    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+<span class="ln"> 6 </span>    <span class="k">try</span><span class="p">:</span>
+<span class="ln"> 7 </span>        <span class="k">yield</span> <span class="n">fh</span>
+<span class="ln"> 8 </span>    <span class="k">finally</span><span class="p">:</span>
+<span class="ln"> 9 </span>        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></pre><div class="notes"><p>For simple context managers, defining a class with two methods is a lot of
+boilerplate; contextlib.contextmanager streamlines it.</p><p>Uses one feature we've seen - a decorator! and another we will look at
+shortly, a generator (yield statement).</p><p>Whatever value we yield goes to the with statement's 'as' clause; after the
+with block executes, execution resumes after the yield.</p><p>In this case any exceptions from inside the with block are re-raised at the
+point of the yield, so if we want unconditional cleanup we still need to use
+a try/finally.</p></div></div><div class="step" step="23" data-reveal="1" data-x="36800" data-y="0"><h1 id="cautions">Cautions</h1><ul><li>None!</li><li>Context managers are awesome.</li><li>Use them anywhere you need to manage resource life-cycles; setup/teardown.</li></ul></div><div class="step" step="24" id="questions" data-x="38400" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/glossary.html#term-decorator">docs.python.org/3/glossary.html#term-decorator</a></li><li><a href="http://docs.python.org/3/reference/datamodel.html#context-managers">docs.python.org/3/reference/datamodel.html#context-managers</a></li></ul><p><div class="vcard">
 <a href="http://www.oddbird.net">
   <img src="images/logo.svg" alt="OddBird" class="logo" />
 </a>
