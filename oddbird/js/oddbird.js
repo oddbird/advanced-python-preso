@@ -18,9 +18,9 @@ $(function () {
     var linenos = slide.find('.code .ln');
     if (emph) {
       emph.split(',').forEach(function (num) {
-        // pad single digit with spaces to avoid matching within a double-digit
-        // line number
-        if (num.length === 1) { num = ' ' + num + ' '; }
+        // if the line numbers go into double digits, pad single digits with
+        // spaces to avoid matching within a double-digit line number
+        if (linenos.length > 9 && num.length === 1) { num = ' ' + num + ' '; }
         linenos.filter(':contains(' + num + ')').addClass('emphasized');
       });
     }

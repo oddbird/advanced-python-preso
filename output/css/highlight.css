@@ -347,6 +347,7 @@
 .emphasized {
   display: block;
   position: absolute;
-  width: 97%;
+  width: 103%;
+  margin-left: -3%;
   background: rgba(211, 54, 130, 0.15);
 }

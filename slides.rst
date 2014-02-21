@@ -202,9 +202,12 @@ But:
 
 ----
 
+:data-emphasize-lines: 1,4
+
 Fixing ``repr()`` and ``help()``:
 
 .. code:: python
+   :number-lines:
 
    from functools import wraps
 
@@ -263,10 +266,13 @@ Oops!
 
 ----
 
+:data-emphasize-lines: 3,5
+
 Use ``*args`` and ``**kwargs`` to write decorators that can wrap functions
 taking any arguments:
 
 .. code:: python
+   :number-lines:
 
    def noisy(func):
        @wraps(func)
