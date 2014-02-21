@@ -14,11 +14,25 @@
 $(function () {
   $('.step').each(function () {
     var slide = $(this);
-    var emph = slide.attr('data-emphasize-lines');
-    var linenos = slide.find('.code .ln').html('&nbsp;');
-    if (emph) {
-      emph.split(',').forEach(function (num) {
-        linenos.eq(parseInt(num, 10)-1).addClass('emphasized');
+    var nums = slide.attr('data-emphasize-lines');
+    var stepNums = slide.attr('data-emphasize-lines-step');
+    var linenos = slide.find('.code .ln');
+    var emphasizeLine = function (num) {
+      var ln = linenos.eq(parseInt(num, 10)-1);
+      return $('<span class="emphasized">&nbsp;</span>').insertBefore(ln);
+    };
+    if (slide.data('kill-linenos')) {
+      linenos.html('');
+    }
+    if (nums) {
+      nums.split(',').forEach(function (num) {
+        emphasizeLine(num);
+      });
+    }
+    if (stepNums) {
+      stepNums.split(',').forEach(function (num) {
+        var emph = emphasizeLine(num);
+        emph.addClass('innerStep');
       });
     }
   });

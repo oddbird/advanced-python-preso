@@ -122,6 +122,8 @@ Functions are first class:
 ----
 
 :data-reveal: 1
+:data-emphasize-lines-step: 11,13
+:data-kill-linenos: 1
 
 Decorator
 ---------
@@ -129,6 +131,7 @@ Decorator
 A function that takes a function as an argument, and returns a function.
 
 .. code:: pycon
+   :number-lines:
 
    >>> def noisy(func):
    ...    def decorated():
@@ -155,7 +158,8 @@ A function that takes a function as an argument, and returns a function.
 
 ----
 
-:data-emphasize-lines: 4,5
+:data-emphasize-lines-step: 4,5
+:data-kill-linenos: 1
 
 Decorator syntax
 ----------------
@@ -189,6 +193,7 @@ Either way:
 -----------
 
 .. code:: pycon
+   :number-lines:
 
    >>> say_hi()
    Before
@@ -197,12 +202,16 @@ Either way:
 
 ----
 
+:data-emphasize-lines-step: 2,6
+:data-kill-linenos: 1
+
 But:
 ----
 
 .. for some reason doctest chokes on the help() call here
 .. ignore-next-block
 .. code:: pycon
+   :number-lines:
 
    >>> say_hi
    <function noisy.<locals>.decorated at 0x...>
@@ -213,7 +222,7 @@ But:
 
 ----
 
-:data-emphasize-lines: 1,4
+:data-emphasize-lines-step: 1,4
 
 Fixing ``repr()`` and ``help()``
 --------------------------------
@@ -240,10 +249,14 @@ Fixing ``repr()`` and ``help()``
 
 ----
 
+:data-emphasize-lines-step: 7,11
+:data-kill-linenos: 1
+
 Fixed!
 ------
 
 .. code:: pycon
+   :number-lines:
 
    >>> @noisy
    ... def say_hi():
@@ -280,7 +293,7 @@ Oops!
 
 ----
 
-:data-emphasize-lines: 3,5
+:data-emphasize-lines-step: 3,5
 
 Use ``*args`` and ``**kwargs``
 ------------------------------
@@ -305,10 +318,13 @@ to write decorators that can wrap any function signature:
 
 ----
 
+:data-emphasize-lines-step: 3,4,5,6
+
 A real example
 --------------
 
 .. code:: python
+   :number-lines:
 
    def login_required(view_func):
        @wraps(view_func)
@@ -330,7 +346,7 @@ A real example
 
 ----
 
-:data-emphasize-lines: 2,9
+:data-emphasize-lines-step: 2,6,9
 
 Configurable decorators
 -----------------------
@@ -362,7 +378,7 @@ Configurable decorators
 
 ----
 
-:data-emphasize-lines: 9,10
+:data-emphasize-lines-step: 9,10
 
 Optionally configurable
 -----------------------
@@ -405,10 +421,13 @@ Optionally configurable
 
 ----
 
+:data-emphasize-lines-step: 4,6,7,8,9
+
 With lazy return values:
 -------------------------
 
 .. code:: python
+   :number-lines:
 
    def sort(func):
        @wraps(func)
@@ -422,13 +441,13 @@ With lazy return values:
            return response
        return decorated
 
-    @sort
-    def list_widgets(request):
-        return TemplateResponse(
-            request,
-            'widget_list.html',
-            {'queryset': Widget.objects.all()},
-            )
+   @sort
+   def list_widgets(request):
+       return TemplateResponse(
+           request,
+           'widget_list.html',
+           {'queryset': Widget.objects.all()},
+           )
 
 .. note::
 
@@ -458,6 +477,85 @@ Caution
 * Decorated version is equally testable
 
 * and the only version you need.
+
+----
+
+:data-reveal: 1
+
+Context managers
+----------------
+
+.. code:: python
+
+   with open('somefile.txt', 'w') as fh:
+       fh.write('contents\n')
+
+* Like decorators, allow before/after actions.
+
+* But around any block of code, not just functions.
+
+----
+
+Can replace try/finally
+-----------------------
+
+In place of:
+
+.. code:: python
+
+   fh = open('somefile.txt', 'w')
+   try:
+       fh.write('contents\n')
+   finally:
+       fh.close()
+
+we can write:
+
+.. code:: python
+
+   with open('somefile.txt', 'w') as fh:
+       fh.write('contents\n')
+
+And the context manager closes the file for us at the end of the block.
+
+.. note::
+
+   More concise syntax for resource management / cleanup.
+
+----
+
+:data-emphasize-lines-step: 2,6,7,8,10,11,13
+
+Writing a context manager
+-------------------------
+
+.. code:: python
+   :number-lines:
+
+   class MyOpen():
+       def __init__(self, filename, mode='r'):
+           self.filename = filename
+           self.mode = mode
+
+       def __enter__(self):
+           self.fh = open(self.filename, self.mode)
+           return self.fh
+
+       def __exit__(self, exc_type, exc_value, traceback):
+           self.fh.close()
+
+   with MyOpen('somefile.txt', 'w') as fh:
+       fh.write('contents\n')
+
+.. note::
+
+   As we just saw, the ``open`` built-in already can act like a context
+   manager. But if it didn't, here's a simplified example of how we could
+   implement a context manager to manage opening and closing a file.
+
+   We implement two methods, ``__enter__`` and ``__exit__``. The return value
+   of ``__enter__`` can be anything we like; the user of the context manager
+   can get access to it via the ``as`` keyword.
 
 ----
 

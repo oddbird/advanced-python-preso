@@ -21,35 +21,35 @@ slides.</p><p>All code is Py3, but will note Py2 differences.</p></div></div><di
 <span class="go">Hi!
 Hi!</span></pre><div class="notes"><p>We can pass a function around like any other object.</p><p>Create a function that prints "Hi!"</p><p>Pass it as an argument to another function (note lack of parens; with parens
 we'd be calling the function and passing in its return value, which is
-None).</p><p>Then call it by another name, twice (now we have parens!)</p></div></div><div class="step" step="5" data-reveal="1" data-x="8000" data-y="0"><h1 id="decorator">Decorator</h1><p>A function that takes a function as an argument, and returns a function.</p><pre class="highlight code pycon"><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-<span class="gp">... </span>   <span class="k">def</span> <span class="nf">decorated</span><span class="p">():</span>
-<span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
-<span class="gp">... </span>       <span class="n">func</span><span class="p">()</span>
-<span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
-<span class="gp">... </span>   <span class="k">return</span> <span class="n">decorated</span>
-<span class="go">
-</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span> <span class="o">=</span> <span class="n">noisy</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
-<span class="go">
-</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span><span class="p">()</span>
-<span class="go">Before
-Hi!
-After</span></pre><div class="notes"><p>We pass in say_hi to noisy, and get back the function "decorated"; when we
+None).</p><p>Then call it by another name, twice (now we have parens!)</p></div></div><div class="step" step="5" data-reveal="1" data-emphasize-lines-step="11,13" data-kill-linenos="1" data-x="8000" data-y="0"><h1 id="decorator">Decorator</h1><p>A function that takes a function as an argument, and returns a function.</p><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="ln"> 2 </span><span class="gp">... </span>   <span class="k">def</span> <span class="nf">decorated</span><span class="p">():</span>
+<span class="ln"> 3 </span><span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="gp">... </span>       <span class="n">func</span><span class="p">()</span>
+<span class="ln"> 5 </span><span class="gp">... </span>       <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
+<span class="ln"> 6 </span><span class="gp">... </span>   <span class="k">return</span> <span class="n">decorated</span>
+<span class="ln"> 7 </span><span class="go">
+</span><span class="ln"> 8 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span> <span class="o">=</span> <span class="n">noisy</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="ln"> 9 </span><span class="go">
+</span><span class="ln">10 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi_noisy</span><span class="p">()</span>
+<span class="ln">11 </span><span class="go">Before
+</span><span class="ln">12 </span><span class="go">Hi!
+</span><span class="ln">13 </span><span class="go">After</span></pre><div class="notes"><p>We pass in say_hi to noisy, and get back the function "decorated"; when we
 call it, we get the Before, then the function we passed in (say_hi) is
 called, then we get After.</p><p>The function "decorated" is a closure; it "closes over" the value of the
-variable "func" in its containing scope.</p></div></div><div class="step" step="6" data-emphasize-lines="4,5" data-x="9600" data-y="0"><h1 id="decorator-syntax">Decorator syntax</h1><p>In place of:</p><pre class="highlight code python"><span class="ln">1 </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+variable "func" in its containing scope.</p></div></div><div class="step" step="6" data-emphasize-lines-step="4,5" data-kill-linenos="1" data-x="9600" data-y="0"><h1 id="decorator-syntax">Decorator syntax</h1><p>In place of:</p><pre class="highlight code python"><span class="ln">1 </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
 <span class="ln">2 </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
 <span class="ln">3 </span>
 <span class="ln">4 </span><span class="n">say_hi</span> <span class="o">=</span> <span class="n">noisy</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span></pre><p>we can write:</p><pre class="highlight code python"><span class="ln">1 </span><span class="nd">@noisy</span>
 <span class="ln">2 </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
-<span class="ln">3 </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span></pre><div class="notes"><p>If we don't need the original (undecorated) function.</p></div></div><div class="step" step="7" data-x="11200" data-y="0"><h1 id="either-way">Either way:</h1><pre class="highlight code pycon"><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span><span class="p">()</span>
-<span class="go">Before
-Hi!
-After</span></pre></div><div class="step" step="8" data-x="12800" data-y="0"><h1 id="but">But:</h1><pre class="highlight code pycon"><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
-<span class="go">&lt;function noisy.&lt;locals&gt;.decorated at 0x...&gt;
-
-</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
-<span class="go">Help on function decorated:
-decorated()</span></pre></div><div class="step" step="9" data-emphasize-lines="1,4" data-x="14400" data-y="0"><h1 id="fixing-repr-and-help">Fixing <tt>repr()</tt> and <tt>help()</tt></h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="ln">3 </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span></pre><div class="notes"><p>If we don't need the original (undecorated) function.</p></div></div><div class="step" step="7" data-x="11200" data-y="0"><h1 id="either-way">Either way:</h1><pre class="highlight code pycon"><span class="ln">1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span><span class="p">()</span>
+<span class="ln">2 </span><span class="go">Before
+</span><span class="ln">3 </span><span class="go">Hi!
+</span><span class="ln">4 </span><span class="go">After</span></pre></div><div class="step" step="8" data-emphasize-lines-step="2,6" data-kill-linenos="1" data-x="12800" data-y="0"><h1 id="but">But:</h1><pre class="highlight code pycon"><span class="ln">1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
+<span class="ln">2 </span><span class="go">&lt;function noisy.&lt;locals&gt;.decorated at 0x...&gt;
+</span><span class="ln">3 </span><span class="go">
+</span><span class="ln">4 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="ln">5 </span><span class="go">Help on function decorated:
+</span><span class="ln">6 </span><span class="go">decorated()</span></pre></div><div class="step" step="9" data-emphasize-lines-step="1,4" data-x="14400" data-y="0"><h1 id="fixing-repr-and-help">Fixing <tt>repr()</tt> and <tt>help()</tt></h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
 <span class="ln"> 2 </span>
 <span class="ln"> 3 </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="ln"> 4 </span>    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
@@ -58,17 +58,17 @@ decorated()</span></pre></div><div class="step" step="9" data-emphasize-lines="1
 <span class="ln"> 7 </span>        <span class="n">func</span><span class="p">()</span>
 <span class="ln"> 8 </span>        <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
 <span class="ln"> 9 </span>    <span class="k">return</span> <span class="n">decorated</span></pre><div class="notes"><p>Python standard library has a decorator that helps us make decorators!</p><p>Copies the function name and docstring of the decorated function onto the
-decorator, so it isn't obscured.</p></div></div><div class="step" step="10" data-x="16000" data-y="0"><h1 id="fixed">Fixed!</h1><pre class="highlight code pycon"><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
-<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
-<span class="gp">...</span>
-<span class="go">
-</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
-<span class="go">&lt;function say_hi at 0x...&gt;
-
-</span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
-<span class="go">Help on function say_hi:
-say_hi()</span></pre></div><div class="step" step="11" data-x="17600" data-y="0"><h1 id="let-s-try-another">Let's try another:</h1><pre class="highlight code pycon"><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
+decorator, so it isn't obscured.</p></div></div><div class="step" step="10" data-emphasize-lines-step="7,11" data-kill-linenos="1" data-x="16000" data-y="0"><h1 id="fixed">Fixed!</h1><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
+<span class="ln"> 2 </span><span class="gp">... </span><span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+<span class="ln"> 3 </span><span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">"Hi!"</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="gp">...</span>
+<span class="ln"> 5 </span><span class="go">
+</span><span class="ln"> 6 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">say_hi</span>
+<span class="ln"> 7 </span><span class="go">&lt;function say_hi at 0x...&gt;
+</span><span class="ln"> 8 </span><span class="go">
+</span><span class="ln"> 9 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">say_hi</span><span class="p">)</span>
+<span class="ln">10 </span><span class="go">Help on function say_hi:
+</span><span class="ln">11 </span><span class="go">say_hi()</span></pre></div><div class="step" step="11" data-x="17600" data-y="0"><h1 id="let-s-try-another">Let's try another:</h1><pre class="highlight code pycon"><span class="nd"></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@noisy</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">square</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
 <span class="gp">...</span>
@@ -77,24 +77,24 @@ say_hi()</span></pre></div><div class="step" step="11" data-x="17600" data-y="0"
 <span class="gt">Traceback (most recent call last):
 </span>  File <span class="nb">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
 <span class="gr">TypeError</span>: <span class="n">decorated() takes 0 positional arguments but</span>
-<span class="go">           1 was given</span></pre><h1 id="oops">Oops!</h1></div><div class="step" step="12" data-emphasize-lines="3,5" data-x="19200" data-y="0"><h1 id="use-args-and-kwargs">Use <tt>*args</tt> and <tt>**kwargs</tt></h1><p>to write decorators that can wrap any function signature:</p><pre class="highlight code python"><span class="ln">1 </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="go">           1 was given</span></pre><h1 id="oops">Oops!</h1></div><div class="step" step="12" data-emphasize-lines-step="3,5" data-x="19200" data-y="0"><h1 id="use-args-and-kwargs">Use <tt>*args</tt> and <tt>**kwargs</tt></h1><p>to write decorators that can wrap any function signature:</p><pre class="highlight code python"><span class="ln">1 </span><span class="k">def</span> <span class="nf">noisy</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="ln">2 </span>    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 <span class="ln">3 </span>    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="ln">4 </span>        <span class="k">print</span><span class="p">(</span><span class="s">"Before"</span><span class="p">)</span>
 <span class="ln">5 </span>        <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="ln">6 </span>        <span class="k">print</span><span class="p">(</span><span class="s">"After"</span><span class="p">)</span>
 <span class="ln">7 </span>    <span class="k">return</span> <span class="n">decorated</span></pre><div class="notes"><p>Depends on the type of decorators. Some decorators might look at or even
-change the arguments, so this total flexibility wouldn't work.</p></div></div><div class="step" step="13" data-x="20800" data-y="0"><h1 id="a-real-example">A real example</h1><pre class="highlight code python"><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="p">):</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">'/login/'</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">view_func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">decorated</span>
-
-<span class="nd">@login_required</span>
-<span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="k">pass</span> <span class="c"># ...</span></pre><div class="notes"><p>Simplified from the actual implementation.</p><p>Here we are hardcoding the login URL to redirect to.</p></div></div><div class="step" step="14" data-emphasize-lines="2,9" data-x="22400" data-y="0"><h1 id="configurable-decorators">Configurable decorators</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">login_url</span><span class="p">):</span>
+change the arguments, so this total flexibility wouldn't work.</p></div></div><div class="step" step="13" data-emphasize-lines-step="3,4,5,6" data-x="20800" data-y="0"><h1 id="a-real-example">A real example</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="p">):</span>
+<span class="ln"> 2 </span>    <span class="nd">@wraps</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
+<span class="ln"> 3 </span>    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="ln"> 4 </span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+<span class="ln"> 5 </span>            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">'/login/'</span><span class="p">)</span>
+<span class="ln"> 6 </span>        <span class="k">return</span> <span class="n">view_func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="ln"> 7 </span>    <span class="k">return</span> <span class="n">decorated</span>
+<span class="ln"> 8 </span>
+<span class="ln"> 9 </span><span class="nd">@login_required</span>
+<span class="ln">10 </span><span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="ln">11 </span>    <span class="k">pass</span> <span class="c"># ...</span></pre><div class="notes"><p>Simplified from the actual implementation.</p><p>Here we are hardcoding the login URL to redirect to.</p></div></div><div class="step" step="14" data-emphasize-lines-step="2,6,9" data-x="22400" data-y="0"><h1 id="configurable-decorators">Configurable decorators</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">login_url</span><span class="p">):</span>
 <span class="ln"> 2 </span>    <span class="k">def</span> <span class="nf">actual_decorator</span><span class="p">(</span><span class="n">view_func</span><span class="p">):</span>
 <span class="ln"> 3 </span>        <span class="nd">@wraps</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
 <span class="ln"> 4 </span>        <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -108,7 +108,7 @@ change the arguments, so this total flexibility wouldn't work.</p></div></div><d
 <span class="ln">12 </span><span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 <span class="ln">13 </span>    <span class="k">pass</span> <span class="c"># ...</span></pre><div class="notes"><p>A decorator that takes arguments is really a decorator factory: a function
 that returns a decorator.</p><p>And a decorator, of course, is a function that returns a function: so we end
-up with double-nested closures.</p></div></div><div class="step" step="15" data-emphasize-lines="9,10" data-x="24000" data-y="0"><h1 id="optionally-configurable">Optionally configurable</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">login_url</span><span class="o">=</span><span class="s">'/login/'</span><span class="p">):</span>
+up with double-nested closures.</p></div></div><div class="step" step="15" data-emphasize-lines-step="9,10" data-x="24000" data-y="0"><h1 id="optionally-configurable">Optionally configurable</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">login_required</span><span class="p">(</span><span class="n">view_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">login_url</span><span class="o">=</span><span class="s">'/login/'</span><span class="p">):</span>
 <span class="ln"> 2 </span>    <span class="k">def</span> <span class="nf">actual_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="ln"> 3 </span>        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 <span class="ln"> 4 </span>        <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -131,29 +131,52 @@ an already-decorated view function, depending what arguments we get.</p><p>Could
 parens in the first usage, but requiring those makes it easier to use the
 decorator wrong.</p><p>This requires passing in login_url as a keyword argument, we could be even
 cleverer if we want by type-checking the first argument (is it a function?
-is it a string?)</p></div></div><div class="step" step="16" data-x="25600" data-y="0"><h1 id="with-lazy-return-values">With lazy return values:</h1><pre class="highlight code python"><span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">sort_by</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'sort'</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">sort_by</span><span class="p">:</span>
-            <span class="n">ctx</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s">'context'</span><span class="p">]</span>
-            <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
-                <span class="n">sort_by</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span>
-    <span class="k">return</span> <span class="n">decorated</span>
-
- <span class="nd">@sort</span>
- <span class="k">def</span> <span class="nf">list_widgets</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-     <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span>
-         <span class="n">request</span><span class="p">,</span>
-         <span class="s">'widget_list.html'</span><span class="p">,</span>
-         <span class="p">{</span><span class="s">'queryset'</span><span class="p">:</span> <span class="n">Widget</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()},</span>
-         <span class="p">)</span></pre><div class="notes"><p>The list_widgets view returns a TemplateResponse, which renders an HTML
+is it a string?)</p></div></div><div class="step" step="16" data-emphasize-lines-step="4,6,7,8,9" data-x="25600" data-y="0"><h1 id="with-lazy-return-values">With lazy return values:</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="ln"> 2 </span>    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="ln"> 3 </span>    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="ln"> 4 </span>        <span class="n">sort_by</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'sort'</span><span class="p">)</span>
+<span class="ln"> 5 </span>        <span class="n">response</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="ln"> 6 </span>        <span class="k">if</span> <span class="n">sort_by</span><span class="p">:</span>
+<span class="ln"> 7 </span>            <span class="n">ctx</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s">'context'</span><span class="p">]</span>
+<span class="ln"> 8 </span>            <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+<span class="ln"> 9 </span>                <span class="n">sort_by</span><span class="p">)</span>
+<span class="ln">10 </span>        <span class="k">return</span> <span class="n">response</span>
+<span class="ln">11 </span>    <span class="k">return</span> <span class="n">decorated</span>
+<span class="ln">12 </span>
+<span class="ln">13 </span><span class="nd">@sort</span>
+<span class="ln">14 </span><span class="k">def</span> <span class="nf">list_widgets</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="ln">15 </span>    <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span>
+<span class="ln">16 </span>        <span class="n">request</span><span class="p">,</span>
+<span class="ln">17 </span>        <span class="s">'widget_list.html'</span><span class="p">,</span>
+<span class="ln">18 </span>        <span class="p">{</span><span class="s">'queryset'</span><span class="p">:</span> <span class="n">Widget</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()},</span>
+<span class="ln">19 </span>        <span class="p">)</span></pre><div class="notes"><p>The list_widgets view returns a TemplateResponse, which renders an HTML
 template but does so lazily, meaning our decorator can still poke at the
 context (values passed to template) before the template is rendered. In this
 case we sort the queryset based on a field name given in the request.</p><p>This decorator could be applied to provide generic sortability to any view
-that renders a queryset in its template.</p><p>(Note: needs error handling.)</p></div></div><div class="step" step="17" data-reveal="1" data-x="27200" data-y="0"><h1 id="caution">Caution</h1><ul><li>Decorator becomes part of the function.</li><li>Can't test the plain pre-decorated function.</li><li>Only use if:</li><li>Decorated version is equally testable</li><li>and the only version you need.</li></ul></div><div class="step" step="18" id="questions" data-x="28800" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/glossary.html#term-decorator">docs.python.org/3/glossary.html#term-decorator</a></li></ul><p><div class="vcard">
+that renders a queryset in its template.</p><p>(Note: needs error handling.)</p></div></div><div class="step" step="17" data-reveal="1" data-x="27200" data-y="0"><h1 id="caution">Caution</h1><ul><li>Decorator becomes part of the function.</li><li>Can't test the plain pre-decorated function.</li><li>Only use if:</li><li>Decorated version is equally testable</li><li>and the only version you need.</li></ul></div><div class="step" step="18" data-reveal="1" data-x="28800" data-y="0"><h1 id="context-managers">Context managers</h1><pre class="highlight code python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'somefile.txt'</span><span class="p">,</span> <span class="s">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">'contents</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span></pre><ul><li>Like decorators, allow before/after actions.</li><li>But around any block of code, not just functions.</li></ul></div><div class="step" step="19" data-x="30400" data-y="0"><h1 id="can-replace-try-finally">Can replace try/finally</h1><p>In place of:</p><pre class="highlight code python"><span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'somefile.txt'</span><span class="p">,</span> <span class="s">'w'</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">'contents</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></pre><p>we can write:</p><pre class="highlight code python"><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'somefile.txt'</span><span class="p">,</span> <span class="s">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">'contents</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span></pre><p>And the context manager closes the file for us at the end of the block.</p><div class="notes"><p>More concise syntax for resource management / cleanup.</p></div></div><div class="step" step="20" data-emphasize-lines-step="2,6,7,8,10,11,13" data-x="32000" data-y="0"><h1 id="writing-a-context-manager">Writing a context manager</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">class</span> <span class="nc">MyOpen</span><span class="p">():</span>
+<span class="ln"> 2 </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'r'</span><span class="p">):</span>
+<span class="ln"> 3 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+<span class="ln"> 4 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+<span class="ln"> 5 </span>
+<span class="ln"> 6 </span>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ln"> 7 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+<span class="ln"> 8 </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span>
+<span class="ln"> 9 </span>
+<span class="ln">10 </span>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+<span class="ln">11 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="ln">12 </span>
+<span class="ln">13 </span><span class="k">with</span> <span class="n">MyOpen</span><span class="p">(</span><span class="s">'somefile.txt'</span><span class="p">,</span> <span class="s">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+<span class="ln">14 </span>    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">'contents</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span></pre><div class="notes"><p>As we just saw, the <tt>open</tt> built-in already can act like a context
+manager. But if it didn't, here's a simplified example of how we could
+implement a context manager to manage opening and closing a file.</p><p>We implement two methods, <tt>__enter__</tt> and <tt>__exit__</tt>. The return value
+of <tt>__enter__</tt> can be anything we like; the user of the context manager
+can get access to it via the <tt>as</tt> keyword.</p></div></div><div class="step" step="21" id="questions" data-x="33600" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/glossary.html#term-decorator">docs.python.org/3/glossary.html#term-decorator</a></li></ul><p><div class="vcard">
 <a href="http://www.oddbird.net">
   <img src="images/logo.svg" alt="OddBird" class="logo" />
 </a>
