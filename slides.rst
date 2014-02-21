@@ -61,7 +61,8 @@ How
 
 .. note::
 
-   No stress; doc links will be live in online slides.
+   Docs links on final slide. No stress; doc links will be live in online
+   slides.
 
    All code is Py3, but will note Py2 differences.
 
@@ -440,6 +441,38 @@ With lazy return values:
    that renders a queryset in its template.
 
    (Note: needs error handling.)
+
+----
+
+:data-reveal: 1
+
+Caution
+-------
+
+* Decorator becomes part of the function.
+
+* Can't test the plain pre-decorated function.
+
+* Only use if:
+
+* Decorated version is equally testable
+
+* and the only version you need.
+
+----
+
+:id: questions
+
+Questions?
+==========
+
+* `oddbird.net/advanced-python-preso`_
+* `docs.python.org/3/glossary.html#term-decorator`_
+
+.. _oddbird.net/advanced-python-preso: http://oddbird.net/advanced-python-preso
+.. _docs.python.org/3/glossary.html#term-decorator: http://docs.python.org/3/glossary.html#term-decorator
+
+|hcard|
 
 .. |hcard| raw:: html
 
