@@ -90,3 +90,11 @@ $green    : #859900;
 .vg { color: $blue } /* Name.Variable.Global */
 .vi { color: $blue } /* Name.Variable.Instance */
 .il { color: $cyan } /* Literal.Number.Integer.Long */
+
+
+.emphasized {
+  display: block;
+  position: absolute;
+  width: 97%;
+  background: rgba(211, 54, 130, 0.15);
+  }
