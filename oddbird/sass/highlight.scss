@@ -91,11 +91,15 @@ $green    : #859900;
 .vi { color: $blue } /* Name.Variable.Instance */
 .il { color: $cyan } /* Literal.Number.Integer.Long */
 
+.code {
+  position: relative;
+}
 
 .emphasized {
   display: block;
   position: absolute;
-  width: 103%;
-  margin-left: -3%;
+  width: 100%;
+  left: 0;
+  right: 0;
   background: rgba($magenta, 0.15);
   }

@@ -344,10 +344,15 @@
 }
 
 /* Literal.Number.Integer.Long */
+.code {
+  position: relative;
+}
+
 .emphasized {
   display: block;
   position: absolute;
-  width: 103%;
-  margin-left: -3%;
+  width: 100%;
+  left: 0;
+  right: 0;
   background: rgba(211, 54, 130, 0.15);
 }
