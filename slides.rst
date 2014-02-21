@@ -402,6 +402,45 @@ Optionally configurable
    cleverer if we want by type-checking the first argument (is it a function?
    is it a string?)
 
+----
+
+With lazy return values:
+-------------------------
+
+.. code:: python
+
+   def sort(func):
+       @wraps(func)
+       def decorated(request, *args, **kwargs):
+           sort_by = request.GET.get('sort')
+           response = func(request, *args, **kwargs)
+           if sort_by:
+               ctx = response['context']
+               ctx['queryset'] = ctx['queryset'].order_by(
+                   sort_by)
+           return response
+       return decorated
+
+    @sort
+    def list_widgets(request):
+        return TemplateResponse(
+            request,
+            'widget_list.html',
+            {'queryset': Widget.objects.all()},
+            )
+
+.. note::
+
+   The list_widgets view returns a TemplateResponse, which renders an HTML
+   template but does so lazily, meaning our decorator can still poke at the
+   context (values passed to template) before the template is rendered. In this
+   case we sort the queryset based on a field name given in the request.
+
+   This decorator could be applied to provide generic sortability to any view
+   that renders a queryset in its template.
+
+   (Note: needs error handling.)
+
 .. |hcard| raw:: html
 
    <div class="vcard">

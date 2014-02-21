@@ -130,4 +130,26 @@ an already-decorated view function, depending what arguments we get.</p><p>Could
 parens in the first usage, but requiring those makes it easier to use the
 decorator wrong.</p><p>This requires passing in login_url as a keyword argument, we could be even
 cleverer if we want by type-checking the first argument (is it a function?
-is it a string?)</p></div></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/jquery-2.1.0.min.js"></script><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
+is it a string?)</p></div></div><div class="step" step="16" data-x="25600" data-y="0"><h1 id="with-lazy-return-values">With lazy return values:</h1><pre class="highlight code python"><span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">decorated</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">sort_by</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'sort'</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sort_by</span><span class="p">:</span>
+            <span class="n">ctx</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s">'context'</span><span class="p">]</span>
+            <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s">'queryset'</span><span class="p">]</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+                <span class="n">sort_by</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">return</span> <span class="n">decorated</span>
+
+ <span class="nd">@sort</span>
+ <span class="k">def</span> <span class="nf">list_widgets</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+     <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span>
+         <span class="n">request</span><span class="p">,</span>
+         <span class="s">'widget_list.html'</span><span class="p">,</span>
+         <span class="p">{</span><span class="s">'queryset'</span><span class="p">:</span> <span class="n">Widget</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()},</span>
+         <span class="p">)</span></pre><div class="notes"><p>The list_widgets view returns a TemplateResponse, which renders an HTML
+template but does so lazily, meaning our decorator can still poke at the
+context (values passed to template) before the template is rendered. In this
+case we sort the queryset based on a field name given in the request.</p><p>This decorator could be applied to provide generic sortability to any view
+that renders a queryset in its template.</p><p>(Note: needs error handling.)</p></div></div></div><div id="hovercraft-help" class="hide"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Left, Down, Page Down</th><td>Next slide</td></tr><tr><th>Right, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/jquery-2.1.0.min.js"></script><script type="text/javascript" src="js/oddbird.js"></script><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
