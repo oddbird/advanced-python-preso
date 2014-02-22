@@ -88,7 +88,7 @@ Me
 Decorators
 ==========
 
-Functions are first class:
+Python functions are first class:
 
 .. code:: pycon
 
@@ -117,7 +117,7 @@ Functions are first class:
 ----
 
 :data-reveal: 1
-:data-emphasize-lines-step: 11,13
+:data-emphasize-lines-step: 3,5,11,13
 :data-kill-linenos: 1
 
 Decorator
@@ -350,7 +350,7 @@ A real example
 
 ----
 
-:data-emphasize-lines-step: 2,6,9
+:data-emphasize-lines-step: 1,2,6,9,11
 
 Configurable decorators
 -----------------------
@@ -382,7 +382,7 @@ Configurable decorators
 
 ----
 
-:data-emphasize-lines-step: 9,10
+:data-emphasize-lines-step: 1,9,10,13,17
 
 Optionally configurable
 -----------------------
@@ -469,8 +469,8 @@ With lazy return values:
 
 :data-reveal: 1
 
-Caution
--------
+Cautions
+--------
 
 * Decorator becomes part of the function.
 
@@ -481,6 +481,10 @@ Caution
 * Decorated version is equally testable
 
 * and the only version you need.
+
+* Careful with decorator side effects (e.g. registries of functions): modules
+  can be imported multiple times (or not at all), imports should generally not
+  have side effects.
 
 ----
 
@@ -520,7 +524,7 @@ we can write:
    with open('somefile.txt', 'w') as fh:
        fh.write('contents\n')
 
-And the context manager closes the file for us at the end of the block.
+The context manager closes the file after the block.
 
 .. note::
 
@@ -532,6 +536,8 @@ And the context manager closes the file for us at the end of the block.
 
 Writing a context manager
 -------------------------
+
+If ``open()`` weren't already a context manager, we might write one:
 
 .. code:: python
    :number-lines:
@@ -548,6 +554,7 @@ Writing a context manager
        def __exit__(self, exc_type, exc_value, traceback):
            self.fh.close()
 
+
    with MyOpen('somefile.txt', 'w') as fh:
        fh.write('contents\n')
 
@@ -562,24 +569,27 @@ Writing a context manager
 
 ----
 
-:data-emphasize-lines-step: 7,9,13,17
+:data-emphasize-lines-step: 7,9,12,16
 :data-kill-linenos: 1
 
 Exception handling
 ------------------
 
-.. code:: pycon
+.. code:: python
    :number-lines:
 
-   >>> class NoisyCM:
-   ...     def __enter__(self):
-   ...         print("Entering!")
-   ...
-   ...     def __exit__(self, exc_type, exc_value, traceback):
-   ...         print("Exiting!")
-   ...         if exc_type is not None:
-   ...             print("Caught {}".format(exc_type.__name__))
-   ...             return True
+    class NoisyCM:
+        def __enter__(self):
+            print("Entering!")
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            print("Exiting!")
+            if exc_type is not None:
+                print("Caught {}".format(exc_type.__name__))
+                return True
+
+.. code:: pycon
+   :number-lines:
 
    >>> with NoisyCM():
    ...     print("Inside!")
@@ -614,6 +624,10 @@ Convenience method
            yield fh
        finally:
            fh.close()
+
+
+   with my_open('somefile.txt', 'w') as fh:
+       fh.write('contents\n')
 
 .. note::
 
@@ -1009,8 +1023,8 @@ An aside: magic methods
 :data-emphasize-lines-step: 6,9,12,15,19
 :data-kill-linenos: 1
 
-look, an iterator!
-------------------
+an iterator sighting!
+---------------------
 
 .. code:: pycon
    :number-lines:
@@ -1111,7 +1125,7 @@ two iterators, one list
 
 ----
 
-:data-emphasize-lines-step: 5,11
+:data-emphasize-lines-step: 5,7,8,9,11
 :data-kill-linenos: 1
 
 iterators are iterable
@@ -1146,11 +1160,16 @@ This means an iterator is also iterable (but one-shot).
 
 ----
 
+let's try writing our own
+-------------------------
+
+----
+
 :data-emphasize-lines-step: 6,11
 :data-kill-linenos: 1
 
-fibonacci iterator
-------------------
+a fibonacci iterator
+---------------------
 
 .. code:: python
    :number-lines:
@@ -1190,7 +1209,7 @@ fibonacci iterator
 
 ----
 
-:data-emphasize-lines-step: 3,5
+:data-emphasize-lines-step: 3,5,8
 :data-kill-linenos: 1
 
 itertools: iterator plumbing
@@ -1223,6 +1242,55 @@ itertools: iterator plumbing
 
    This processes only one element at a time, so we won't exhaust memory no
    matter how high we go.
+
+----
+
+more usefully
+-------------
+
+.. setup a process_lines function
+
+   >>> processed = []
+
+   >>> def process_line(line):
+   ...     processed.append(line.strip())
+
+.. code:: python
+
+   import itertools
+
+   def get_interesting_lines(fh):
+       no_header = itertools.dropwhile(
+           lambda line: "START BODY" not in line, fh)
+       next(no_header)
+
+       body_only = itertools.takewhile(
+           lambda line: "END BODY" not in line, no_header)
+
+       interesting_lines = filter(
+           lambda line: not line.startswith('#'), body_only)
+
+       return interesting_lines
+
+   with open('gigantic_file.txt') as fh:
+       for line in get_interesting_lines(fh):
+           process_line(line)
+
+
+.. check the results
+
+   >>> processed
+   ['line one', 'line two']
+
+.. note::
+
+   File objects are iterators yielding lines. So we can process a massive file
+   one line at a time, using itertools to filter down to only lines that we
+   care about.
+
+   And we can build up logical building blocks (pipe segments) like our
+   "get_interesting_lines" filter that can operate on streams one element at a
+   time.
 
 ----
 

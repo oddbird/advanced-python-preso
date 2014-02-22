@@ -1,0 +1,7 @@
+header
+START BODY
+line one
+# comment
+line two
+END BODY
+footer
