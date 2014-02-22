@@ -21,7 +21,7 @@ $(function () {
       var ln = linenos.eq(parseInt(num, 10)-1);
       return $('<span class="emphasized">&nbsp;</span>').insertBefore(ln);
     };
-    if (slide.data('kill-linenos')) {
+    if (!slide.data('keep-linenos')) {
       linenos.html('');
     }
     if (nums) {

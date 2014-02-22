@@ -118,7 +118,6 @@ Python functions are first class:
 
 :data-reveal: 1
 :data-emphasize-lines-step: 3,5,11,13
-:data-kill-linenos: 1
 
 Decorator
 ---------
@@ -154,7 +153,6 @@ A function that takes a function as an argument, and returns a function.
 ----
 
 :data-emphasize-lines-step: 4,5
-:data-kill-linenos: 1
 
 Decorator syntax
 ----------------
@@ -198,7 +196,6 @@ Either way:
 ----
 
 :data-emphasize-lines-step: 2,6
-:data-kill-linenos: 1
 
 But:
 ----
@@ -254,7 +251,6 @@ Fixing ``repr()`` and ``help()``
 ----
 
 :data-emphasize-lines-step: 7,11
-:data-kill-linenos: 1
 
 Fixed!
 ------
@@ -570,7 +566,6 @@ If ``open()`` weren't already a context manager, we might write one:
 ----
 
 :data-emphasize-lines-step: 7,9,12,16
-:data-kill-linenos: 1
 
 Exception handling
 ------------------
@@ -661,7 +656,6 @@ Descriptors
 ----
 
 :data-emphasize-lines-step: 7,10,15
-:data-kill-linenos: 1
 
 Attributes are simple:
 
@@ -1021,7 +1015,6 @@ An aside: magic methods
 ----
 
 :data-emphasize-lines-step: 6,9,12,15,19
-:data-kill-linenos: 1
 
 an iterator sighting!
 ---------------------
@@ -1087,7 +1080,6 @@ So what really happens when I ``for x in numbers: print(x)``?
 ----
 
 :data-emphasize-lines-step: 8,11
-:data-kill-linenos: 1
 
 two iterators, one list
 -----------------------
@@ -1126,7 +1118,6 @@ two iterators, one list
 ----
 
 :data-emphasize-lines-step: 5,7,8,9,11
-:data-kill-linenos: 1
 
 iterators are iterable
 ----------------------
@@ -1166,7 +1157,6 @@ let's try writing our own
 ----
 
 :data-emphasize-lines-step: 6,11
-:data-kill-linenos: 1
 
 a fibonacci iterator
 ---------------------
@@ -1210,7 +1200,6 @@ a fibonacci iterator
 ----
 
 :data-emphasize-lines-step: 3,5,8
-:data-kill-linenos: 1
 
 itertools: iterator plumbing
 ----------------------------
@@ -1317,7 +1306,6 @@ Generators
 ----
 
 :data-emphasize-lines-step: 2,3,4,5,9,11,12,13,19,21
-:data-kill-linenos: 1
 
 .. code:: python
    :number-lines:
@@ -1351,7 +1339,6 @@ Generators
 ----
 
 :data-emphasize-lines-step: 1,5,9,11,12
-:data-kill-linenos: 1
 
 fibonacci generator
 -------------------
@@ -1580,6 +1567,142 @@ we can call ``type()`` to create a class:
        (Person,),
        {'activity': 'singing', 'do': do},
        )
+
+.. note::
+
+   First argument to type is the name of the class to build.
+
+   Second argument is a tuple of the classes to inherit from (can be empty).
+
+   Third argument is a dictionary of the class attributes (including methods).
+
+   This is equivalent to the local variables at the end of executing the body
+   of a `class` block.
+
+----
+
+:data-emphasize-lines-step: 1,2,3,4,5,6,7,9,10,11
+
+make your own metaclass
+-----------------------
+
+.. code:: python
+   :number-lines:
+
+   class NoisyMetaclass(type):
+       def __new__(cls, name, bases, attrs, **kwds):
+           print("Creating a class named {}".format(name))
+           print("It inherits from {}".format(bases))
+           print("It has attributes {}".format(attrs))
+           return type.__new__(cls, name, bases, attrs, **kwds)
+
+.. code:: pycon
+   :number-lines:
+
+   >>> class Person(metaclass=NoisyMetaclass):
+   ...     activity = 'rowing'
+   Creating a class named Person
+   It inherits from ()
+   It has attributes {...'activity': 'rowing'...}
+
+----
+
+:data-emphasize-lines-step: 3,4,5,6,11,12,19
+
+checking interfaces
+-------------------
+
+.. code:: python
+   :number-lines:
+
+   class RequireMethods(type):
+       def __new__(cls, name, bases, attrs):
+           new_cls = type.__new__(cls, name, bases, attrs)
+           for method in new_cls.required_methods:
+               if method not in attrs:
+                   raise TypeError(
+                       "{} class must implement '{}'.".format(
+                           name, method))
+           return new_cls
+
+   class Command(metaclass=RequireMethods):
+       required_methods = {'run'}
+
+       def run(self):
+           raise NotImplementedError()
+
+.. code:: pycon
+   :number-lines:
+
+   >>> class Install(Command):
+   ...     pass
+   Traceback (most recent call last):
+   TypeError: Install class must implement 'run'.
+
+.. note::
+
+   For example, we could use a metaclass if we have a base class that others
+   will be subclassing, and we want to require them to override certain methods
+   in their subclass.
+
+----
+
+ORM field definitions
+---------------------
+
+.. ignore-next-block
+.. code:: python
+
+   class Person(models.Model):
+       name = models.CharField()
+       age = models.IntegerField()
+
+.. note::
+
+   This syntax is based on the Django ORM, but other ORMs (e.g. SQLAlchemy)
+   provide similar declarative syntax for defining your db schema.
+
+   In this case the ORM needs to know what fields are in the person table, and
+   so it would use a metaclass on the base ``Model`` class to hook into the
+   creation of any subclass of ``Model``.
+
+----
+
+:data-reveal: 1
+
+Metaclass notes
+---------------
+
+* You probably don't want to use them.
+
+* In Python 2, specify a metaclass with the ``__metaclass__`` class attribute,
+  not a ``metaclass`` keyword argument in the bases list.
+
+* Python 3 metaclasses can also define a ``__prepare__()`` method to hook in
+  even earlier, before the class body is executed. Useful if you need to record
+  the order that class attributes were given.
+
+----
+
+:data-reveal: 1
+
+Review
+======
+
+* **Decorators** let you share pre- and post- behaviors between functions.
+
+* **Context managers** let you run setup and teardown code around any block of
+  code.
+
+* **Descriptors** (and **property**) let you customize attribute access on your
+  classes.
+
+* **Iterators** and **generators** let you customize iteration behavior of your
+  classes, and process/filter/transform data streams lazily one item at a time.
+
+* **Metaclasses** let you hook into the process of creating a class.
+
+* We only scratched the surface; go read the docs and have fun!
 
 ----
 
