@@ -289,7 +289,111 @@ store the value.</p><p>Then it gets interesting:</p><ul><li><tt>property</tt> tu
 <span class="ln">11 </span>    <span class="n">is_admin</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_is_admin</span><span class="p">,</span> <span class="n">_set_is_admin</span><span class="p">)</span></pre><div class="notes"><p>If you find the decorators for getter/setter properties hard to grok, you
 might find this alternate spelling clearer.</p><p>Just define the getter and setter with private names and pass in to the
 property constructor.</p><p>Same effect as before.</p><p>Can pass in a deleter method as third arg.</p></div></div><div class="step" step="33" data-reveal="1" data-x="52800" data-y="0"><h1 id="descriptors-properties">Descriptors &amp; properties</h1><ul><li>Hide getters &amp; setters behind simple-attribute facade.</li><li>Descriptor protocol is fundamental to Python's object model: used internally
-to implement bound methods, staticmethods, classmethods...</li><li>For most cases <tt>property</tt> is simpler than a custom descriptor class.</li><li>In Python 2, can only be used with "new-style" classes (inherit <tt>object</tt>).</li></ul></div><div class="step" step="34" id="questions" data-x="54400" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/glossary.html#term-decorator">docs.python.org/3/glossary.html#term-decorator</a></li><li><a href="http://docs.python.org/3/reference/datamodel.html#context-managers">docs.python.org/3/reference/datamodel.html#context-managers</a></li><li><a href="http://docs.python.org/3/howto/descriptor.html">docs.python.org/3/howto/descriptor.html</a></li></ul><p><div class="vcard">
+to implement bound methods, staticmethods, classmethods...</li><li>For most cases <tt>property</tt> is simpler than a custom descriptor class.</li><li>In Python 2, can only be used with "new-style" classes (inherit <tt>object</tt>).</li></ul></div><div class="step" step="34" data-x="54400" data-y="0"><h1 id="iterables-iterators-generators-oh-my">Iterables, iterators, &amp; generators, oh my!</h1></div><div class="step" step="35" data-x="56000" data-y="0"><h1 id="iteration-is-simple">Iteration is simple.</h1><pre class="highlight code pycon"><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="go">
+</span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="go">1
+2
+3</span></pre><div class="notes"><p>We can make a list, and then use <tt>for ... in ...</tt> to iterate over that
+list.</p></div></div><div class="step" step="36" data-reveal="1" data-x="57600" data-y="0"><h1 id="what-is-iterable">What is <strong>iterable</strong>?</h1><ul><li>List, set, tuple, dict...</li><li>Any object with an <tt>__iter__</tt> method.</li><li>The <tt>__iter__</tt> method must return an <strong>iterator</strong>.</li></ul><div class="notes"><p>The term for objects that we can iterate over is "iterable".</p><p>Many built-in types are iterable: list, set, tuple, dict...</p><p>Any object can be iterable; it just needs an <tt>__iter__</tt> method.</p><p>Which must return an iterator.</p><p>Which of course raises the question...</p></div></div><div class="step" step="37" data-reveal="1" data-x="59200" data-y="0"><h1 id="ok-what-s-an-iterator">Ok, what's an <strong>iterator</strong>?</h1><ul><li>An <strong>iterator</strong> keeps track of where we are in iterating over some
+collection.</li><li>Has a <tt>__next__()</tt> method that gives us the next item when we ask for it.</li><li>Raises a <tt>StopIteration</tt> exception when there are no more items.</li><li>Used internally every time you use <tt>for ... in</tt>, but usually hidden.</li><li>But we can see one, now that we know where to look...</li></ul></div><div class="step" step="38" data-reveal="1" data-x="60800" data-y="0"><h1 id="an-aside-magic-methods">An aside: magic methods</h1><ul><li>Python's data model is largely implemented via "magic-method protocols."</li><li>E.g. any object can implement a <tt>__len__()</tt> method; <tt>len(obj)</tt> is
+equivalent to <tt>obj.__len__()</tt>.</li><li>Allows user classes to participate fully in the language syntax; not be
+second-class to built-in types.</li><li>Many others: comparison (e.g. <tt>__eq__()</tt>), type conversion
+(e.g. <tt>__str__()</tt>), attribute access (e.g. <tt>__getattr__()</tt>), descriptors
+(<tt>__get__()</tt> et al). Look up the full list!</li><li>the iterable (<tt>__iter__()</tt>) and iterator (<tt>__next__()</tt>) protocols.</li><li>As with <tt>len()</tt>, there are <tt>iter()</tt> and <tt>next()</tt> built-ins;
+<tt>iter(obj)</tt> just calls <tt>obj.__iter__()</tt>.</li></ul></div><div class="step" step="39" data-emphasize-lines-step="6,9,12,15,19" data-kill-linenos="1" data-x="62400" data-y="0"><h1 id="look-an-iterator">look, an iterator!</h1><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="ln"> 2 </span><span class="go">
+</span><span class="ln"> 3 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="go">
+</span><span class="ln"> 5 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iterator</span>
+<span class="ln"> 6 </span><span class="go">&lt;list_iterator object at 0x...&gt;
+</span><span class="ln"> 7 </span><span class="go">
+</span><span class="ln"> 8 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+<span class="ln"> 9 </span><span class="go">1
+</span><span class="ln">10 </span><span class="go">
+</span><span class="ln">11 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+<span class="ln">12 </span><span class="go">2
+</span><span class="ln">13 </span><span class="go">
+</span><span class="ln">14 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+<span class="ln">15 </span><span class="go">3
+</span><span class="ln">16 </span><span class="go">
+</span><span class="ln">17 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+<span class="ln">18 </span><span class="gt">Traceback (most recent call last):
+</span><span class="ln">19 </span><span class="gt"></span><span class="gr">StopIteration</span></pre><div class="notes"><p>We can get an iterator for a list, and then keep calling <tt>next()</tt> on it
+and getting the next item in the list, until finally it raises
+<tt>StopIteration</tt>.</p><p>Wondering why you don't see <tt>StopIteration</tt> all over the place? The
+<tt>for</tt> loop (and other kinds of built-in iteration, such as comprehensions)
+catch it for you; that's how they know when iteration is done.</p></div></div><div class="step" step="40" data-emphasize-lines-step="1,4,6" data-x="64000" data-y="0"><h1 id="the-true-story-of-a-for-loop">The true story of a for loop</h1><p>So what really happens when I <tt>for x in numbers: print(x)</tt>?</p><pre class="highlight code python"><span class="ln">1 </span><span class="n">iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="ln">2 </span><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+<span class="ln">3 </span>    <span class="k">try</span><span class="p">:</span>
+<span class="ln">4 </span>        <span class="n">x</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+<span class="ln">5 </span>    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+<span class="ln">6 </span>        <span class="k">break</span>
+<span class="ln">7 </span>    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre><div class="notes"><p>Get an iterator, keep calling <tt>next()</tt> on that iterator until it raises
+<tt>StopIteration</tt>.</p></div></div><div class="step" step="41" data-emphasize-lines-step="8,11" data-kill-linenos="1" data-x="65600" data-y="0"><h1 id="two-iterators-one-list">two iterators, one list</h1><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="ln"> 2 </span><span class="go">
+</span><span class="ln"> 3 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iter1</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="go">
+</span><span class="ln"> 5 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iter2</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="ln"> 6 </span><span class="go">
+</span><span class="ln"> 7 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iter1</span><span class="p">)</span>
+<span class="ln"> 8 </span><span class="go">1
+</span><span class="ln"> 9 </span><span class="go">
+</span><span class="ln">10 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">iter2</span><span class="p">)</span>
+<span class="ln">11 </span><span class="go">1
+</span><span class="ln">12 </span><span class="go">
+</span><span class="ln">13 </span><span class="go"></span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">:</span>
+<span class="ln">14 </span><span class="gp">... </span>    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">:</span>
+<span class="ln">15 </span><span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="ln">16 </span><span class="go">1 1
+</span><span class="ln">17 </span><span class="go">1 2
+</span><span class="ln">18 </span><span class="go">2 1
+</span><span class="ln">19 </span><span class="go">2 2</span></pre><div class="notes"><p>We can get two different iterators for the same underlying list, and they
+each maintain their own separate iteration state.</p><p>This is why you can do nested for loops over the same list, and they don't
+interfere with each other.</p></div></div><div class="step" step="42" data-emphasize-lines-step="5,11" data-kill-linenos="1" data-x="67200" data-y="0"><h1 id="iterators-are-iterable">iterators are iterable</h1><p>Iterators should define an <tt>__iter__()</tt> method that returns <tt>self</tt>.</p><p>This means an iterator is also iterable (but one-shot).</p><pre class="highlight code pycon"><span class="ln"> 1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="ln"> 2 </span><span class="go">
+</span><span class="ln"> 3 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="ln"> 4 </span><span class="go">
+</span><span class="ln"> 5 </span><span class="go"></span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+<span class="ln"> 6 </span><span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="ln"> 7 </span><span class="go">1
+</span><span class="ln"> 8 </span><span class="go">2
+</span><span class="ln"> 9 </span><span class="go">3
+</span><span class="ln">10 </span><span class="go">
+</span><span class="ln">11 </span><span class="go"></span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+<span class="ln">12 </span><span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">num</span><span class="p">)</span></pre><div class="notes"><p>Also, because iterators are one-shot, you can't do nested loops over the
+same iterator like you can with a list (whose <tt>__iter__()</tt> returns a new
+iterator each time).</p></div></div><div class="step" step="43" data-emphasize-lines-step="6,11" data-kill-linenos="1" data-x="68800" data-y="0"><h1 id="fibonacci-iterator">fibonacci iterator</h1><pre class="highlight code python"><span class="ln"> 1 </span><span class="k">class</span> <span class="nc">Fibonacci</span><span class="p">:</span>
+<span class="ln"> 2 </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ln"> 3 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="ln"> 4 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="ln"> 5 </span>
+<span class="ln"> 6 </span>    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ln"> 7 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="p">(</span>
+<span class="ln"> 8 </span>            <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">)</span>
+<span class="ln"> 9 </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
+<span class="ln">10 </span>
+<span class="ln">11 </span>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ln">12 </span>        <span class="k">return</span> <span class="bp">self</span></pre><pre class="highlight code pycon"><span class="ln">1 </span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Fibonacci</span><span class="p">()</span>
+<span class="ln">2 </span><span class="go">
+</span><span class="ln">3 </span><span class="go"></span><span class="k"></span><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+<span class="ln">4 </span><span class="go">1 1 2 3 5</span></pre><div class="notes"><p>Fibonacci is always used as an example of recursion -- we're going to use it
+as a demonstration of iteration instead.</p><p>We define a <tt>__next__()</tt> method (makes it an iterator) and an
+<tt>__iter__()</tt> method that returns itself (so its iterable; we can use it in
+a for loop.</p><p>But I don't use it in a for loop. Why? Note we never raise <tt>StopIteration</tt>
+from <tt>next()</tt>; this is an infinite iterator!</p></div></div><div class="step" step="44" data-emphasize-lines-step="3,5" data-kill-linenos="1" data-x="70400" data-y="0"><h1 id="itertools-iterator-plumbing">itertools: iterator plumbing</h1><pre class="highlight code pycon"><span class="ln">1 </span><span class="kn"></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">takewhile</span>
+<span class="ln">2 </span><span class="go">
+</span><span class="ln">3 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fib</span> <span class="o">=</span> <span class="n">takewhile</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">,</span> <span class="n">Fibonacci</span><span class="p">())</span>
+<span class="ln">4 </span><span class="go">
+</span><span class="ln">5 </span><span class="go"></span><span class="n"></span><span class="gp">&gt;&gt;&gt; </span><span class="n">multiple_of_7</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">7</span><span class="p">,</span> <span class="n">fib</span><span class="p">)</span>
+<span class="ln">6 </span><span class="go">
+</span><span class="ln">7 </span><span class="go"></span><span class="nb"></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">multiple_of_7</span><span class="p">)</span>
+<span class="ln">8 </span><span class="go">[21, 987, 46368]</span></pre><div class="notes"><p>The <tt>itertools</tt> module contains a bunch of "pipes" you can connect
+together to do interesting things with iterators.</p><p>Just one quick example - check out the docs for lots more!</p><p>We use <tt>takewhile</tt> to limit the infinite Fibonacci iterator to just
+elements under 100,000.</p><p>Then we use <tt>filter</tt> to filter it down to just those that are divisible by
+7.</p><p>This processes only one element at a time, so we won't exhaust memory no
+matter how high we go.</p></div></div><div class="step" step="45" id="questions" data-x="72000" data-y="0"><h1 id="questions">Questions?</h1><ul><li><a href="http://oddbird.net/advanced-python-preso">oddbird.net/advanced-python-preso</a></li><li><a href="http://docs.python.org/3/reference/datamodel.html">docs.python.org/3/reference/datamodel.html</a></li><li><a href="http://docs.python.org/3/glossary.html">docs.python.org/3/glossary.html</a></li><li><a href="http://docs.python.org/3/howto/descriptor.html">docs.python.org/3/howto/descriptor.html</a></li><li><a href="http://docs.python.org/3/tutorial/classes.html">docs.python.org/3/tutorial/classes.html</a></li><li><a href="http://docs.python.org/3/library/itertools.html">docs.python.org/3/library/itertools.html</a></li></ul><p><div class="vcard">
 <a href="http://www.oddbird.net">
   <img src="images/logo.svg" alt="OddBird" class="logo" />
 </a>

@@ -914,20 +914,336 @@ Descriptors & properties
 
 ----
 
+Iterables, iterators, & generators, oh my!
+------------------------------------------
+
+----
+
+Iteration is simple.
+--------------------
+
+.. code:: pycon
+
+   >>> numbers = [1, 2, 3]
+
+   >>> for num in numbers:
+   ...     print(num)
+   1
+   2
+   3
+
+.. note::
+
+   We can make a list, and then use ``for ... in ...`` to iterate over that
+   list.
+
+----
+
+:data-reveal: 1
+
+What is **iterable**?
+---------------------
+
+* List, set, tuple, dict...
+
+* Any object with an ``__iter__`` method.
+
+* The ``__iter__`` method must return an **iterator**.
+
+.. note::
+
+   The term for objects that we can iterate over is "iterable".
+
+   Many built-in types are iterable: list, set, tuple, dict...
+
+   Any object can be iterable; it just needs an ``__iter__`` method.
+
+   Which must return an iterator.
+
+   Which of course raises the question...
+
+----
+
+:data-reveal: 1
+
+Ok, what's an **iterator**?
+---------------------------
+
+* An **iterator** keeps track of where we are in iterating over some
+  collection.
+
+* Has a ``__next__()`` method that gives us the next item when we ask for it.
+
+* Raises a ``StopIteration`` exception when there are no more items.
+
+* Used internally every time you use ``for ... in``, but usually hidden.
+
+* But we can see one, now that we know where to look...
+
+----
+
+:data-reveal: 1
+
+An aside: magic methods
+-----------------------
+
+* Python's data model is largely implemented via "magic-method protocols."
+
+* E.g. any object can implement a ``__len__()`` method; ``len(obj)`` is
+  equivalent to ``obj.__len__()``.
+
+* Allows user classes to participate fully in the language syntax; not be
+  second-class to built-in types.
+
+* Many others: comparison (e.g. ``__eq__()``), type conversion
+  (e.g. ``__str__()``), attribute access (e.g. ``__getattr__()``), descriptors
+  (``__get__()`` et al). Look up the full list!
+
+* the iterable (``__iter__()``) and iterator (``__next__()``) protocols.
+
+* As with ``len()``, there are ``iter()`` and ``next()`` built-ins;
+  ``iter(obj)`` just calls ``obj.__iter__()``.
+
+----
+
+:data-emphasize-lines-step: 6,9,12,15,19
+:data-kill-linenos: 1
+
+look, an iterator!
+------------------
+
+.. code:: pycon
+   :number-lines:
+
+   >>> numbers = [1, 2, 3]
+
+   >>> iterator = iter(numbers)
+
+   >>> iterator
+   <list_iterator object at 0x...>
+
+   >>> next(iterator)
+   1
+
+   >>> next(iterator)
+   2
+
+   >>> next(iterator)
+   3
+
+   >>> next(iterator)
+   Traceback (most recent call last):
+   StopIteration
+
+.. note::
+
+   We can get an iterator for a list, and then keep calling ``next()`` on it
+   and getting the next item in the list, until finally it raises
+   ``StopIteration``.
+
+   Wondering why you don't see ``StopIteration`` all over the place? The
+   ``for`` loop (and other kinds of built-in iteration, such as comprehensions)
+   catch it for you; that's how they know when iteration is done.
+
+----
+
+:data-emphasize-lines-step: 1,4,6
+
+The true story of a for loop
+----------------------------
+
+So what really happens when I ``for x in numbers: print(x)``?
+
+.. code:: python
+   :number-lines:
+
+   iterator = iter(numbers)
+   while True:
+       try:
+           x = next(iterator)
+       except StopIteration:
+           break
+       print(x)
+
+.. note::
+
+   Get an iterator, keep calling ``next()`` on that iterator until it raises
+   ``StopIteration``.
+
+----
+
+:data-emphasize-lines-step: 8,11
+:data-kill-linenos: 1
+
+two iterators, one list
+-----------------------
+
+.. code:: pycon
+   :number-lines:
+
+   >>> numbers = [1, 2]
+
+   >>> iter1 = iter(numbers)
+
+   >>> iter2 = iter(numbers)
+
+   >>> next(iter1)
+   1
+
+   >>> next(iter2)
+   1
+
+   >>> for x in numbers:
+   ...     for y in numbers:
+   ...         print(x, y)
+   1 1
+   1 2
+   2 1
+   2 2
+
+.. note::
+
+   We can get two different iterators for the same underlying list, and they
+   each maintain their own separate iteration state.
+
+   This is why you can do nested for loops over the same list, and they don't
+   interfere with each other.
+
+----
+
+:data-emphasize-lines-step: 5,11
+:data-kill-linenos: 1
+
+iterators are iterable
+----------------------
+
+Iterators should define an ``__iter__()`` method that returns ``self``.
+
+This means an iterator is also iterable (but one-shot).
+
+.. code:: pycon
+   :number-lines:
+
+   >>> numbers = [1, 2, 3]
+
+   >>> iterator = iter(numbers)
+
+   >>> for num in iterator:
+   ...     print(num)
+   1
+   2
+   3
+
+   >>> for num in iterator:
+   ...     print(num)
+
+
+.. note::
+
+   Also, because iterators are one-shot, you can't do nested loops over the
+   same iterator like you can with a list (whose ``__iter__()`` returns a new
+   iterator each time).
+
+----
+
+:data-emphasize-lines-step: 6,11
+:data-kill-linenos: 1
+
+fibonacci iterator
+------------------
+
+.. code:: python
+   :number-lines:
+
+   class Fibonacci:
+       def __init__(self):
+           self.last = 0
+           self.next = 1
+
+       def __next__(self):
+           self.last, self.next = (
+               self.next, self.last + self.next)
+           return self.last
+
+       def __iter__(self):
+           return self
+
+.. code:: pycon
+   :number-lines:
+
+   >>> f = Fibonacci()
+
+   >>> print(next(f), next(f), next(f), next(f), next(f))
+   1 1 2 3 5
+
+.. note::
+
+   Fibonacci is always used as an example of recursion -- we're going to use it
+   as a demonstration of iteration instead.
+
+   We define a ``__next__()`` method (makes it an iterator) and an
+   ``__iter__()`` method that returns itself (so its iterable; we can use it in
+   a for loop.
+
+   But I don't use it in a for loop. Why? Note we never raise ``StopIteration``
+   from ``next()``; this is an infinite iterator!
+
+----
+
+:data-emphasize-lines-step: 3,5
+:data-kill-linenos: 1
+
+itertools: iterator plumbing
+----------------------------
+
+.. code:: pycon
+   :number-lines:
+
+   >>> from itertools import takewhile
+
+   >>> fib = takewhile(lambda x: x < 100000, Fibonacci())
+
+   >>> multiple_of_7 = filter(lambda x: not x % 7, fib)
+
+   >>> list(multiple_of_7)
+   [21, 987, 46368]
+
+.. note::
+
+   The ``itertools`` module contains a bunch of "pipes" you can connect
+   together to do interesting things with iterators.
+
+   Just one quick example - check out the docs for lots more!
+
+   We use ``takewhile`` to limit the infinite Fibonacci iterator to just
+   elements under 100,000.
+
+   Then we use ``filter`` to filter it down to just those that are divisible by
+   7.
+
+   This processes only one element at a time, so we won't exhaust memory no
+   matter how high we go.
+
+----
+
 :id: questions
 
 Questions?
 ==========
 
 * `oddbird.net/advanced-python-preso`_
-* `docs.python.org/3/glossary.html#term-decorator`_
-* `docs.python.org/3/reference/datamodel.html#context-managers`_
+* `docs.python.org/3/reference/datamodel.html`_
+* `docs.python.org/3/glossary.html`_
 * `docs.python.org/3/howto/descriptor.html`_
+* `docs.python.org/3/tutorial/classes.html`_
+* `docs.python.org/3/library/itertools.html`_
 
 .. _oddbird.net/advanced-python-preso: http://oddbird.net/advanced-python-preso
-.. _docs.python.org/3/glossary.html#term-decorator: http://docs.python.org/3/glossary.html#term-decorator
-.. _docs.python.org/3/reference/datamodel.html#context-managers: http://docs.python.org/3/reference/datamodel.html#context-managers
+.. _docs.python.org/3/glossary.html: http://docs.python.org/3/glossary.html
+.. _docs.python.org/3/reference/datamodel.html: http://docs.python.org/3/reference/datamodel.html
 .. _docs.python.org/3/howto/descriptor.html: http://docs.python.org/3/howto/descriptor.html
+.. _docs.python.org/3/tutorial/classes.html: http://docs.python.org/3/tutorial/classes.html
+.. _docs.python.org/3/library/itertools.html: http://docs.python.org/3/library/itertools.html
 
 |hcard|
 

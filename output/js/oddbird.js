@@ -35,5 +35,9 @@ $(function () {
         emph.addClass('innerStep');
       });
     }
+
+    slide.get(0).addEventListener('impress:innerstep', function () {
+      slide.find('.innerStep').removeClass('last').filter('.stepped').last().addClass('last');
+    });
   });
 });
