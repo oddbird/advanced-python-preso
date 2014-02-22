@@ -1294,6 +1294,207 @@ more usefully
 
 ----
 
+:data-reveal: 1
+
+Generators
+----------
+
+* A simpler way to write a function that returns an iterator.
+
+* Any function whose body contains a ``yield`` statement is a generator.
+
+* When the function is called, nothing in its body is executed yet, but it
+  returns a generator object (which is an iterator).
+
+* When the generator's ``__next__()`` method is called, it executes the
+  function body until a ``yield`` and returns the yielded value.
+
+* Repeat.
+
+* When execution in the function body hits a ``return`` or falls off the end,
+  the generator raises ``StopIteration``.
+
+----
+
+:data-emphasize-lines-step: 2,3,4,5,9,11,12,13,19,21
+:data-kill-linenos: 1
+
+.. code:: python
+   :number-lines:
+
+   def toygen():
+       print("Starting function body.")
+       yield 1
+       print("Between yields.")
+       yield 2
+
+.. code:: pycon
+   :number-lines:
+
+   >>> gen = toygen()
+
+   >>> gen
+   <generator object toygen at 0x...>
+
+   >>> next(gen)
+   Starting function body.
+   1
+
+   >>> next(gen)
+   Between yields.
+   2
+
+   >>> next(gen)
+   Traceback (most recent call last):
+   StopIteration
+
+----
+
+:data-emphasize-lines-step: 1,5,9,11,12
+:data-kill-linenos: 1
+
+fibonacci generator
+-------------------
+
+.. code:: python
+   :number-lines:
+
+   def fibonacci():
+       last, next = 0, 1
+       while True:
+           last, next = next, next + last
+           yield last
+
+.. code:: pycon
+   :number-lines:
+
+   >>> fib = fibonacci()
+
+   >>> fib
+   <generator object fibonacci at 0x...>
+
+   >>> list(itertools.takewhile(lambda x: x < 20, fib))
+   [1, 1, 2, 3, 5, 8, 13]
+
+.. note::
+
+   The generator implementation is clearly shorter than the iterator class we
+   wrote before; a simple function instead of a class with multiple methods.
+
+----
+
+re-implementing itertools.takewhile
+-----------------------------------
+
+.. code:: python
+
+   def my_takewhile(predicate, iterator):
+       for elem in iterator:
+           if not predicate(elem):
+               break
+           yield elem
+
+.. note::
+
+   ``takewhile`` can be easily implemented as a generator.
+
+   Just loop over the items in the incoming iterator, yielding them one at a
+   time, and breaking out of the loop the first time we hit an element that
+   fails the predicate test.
+
+----
+
+generator expressions
+---------------------
+
+----
+
+A list comprehension is a concise expression to build/transform/filter a list:
+
+.. code:: pycon
+
+   >>> numbers = [1, 2, 3]
+
+   >>> [n*2 for n in numbers]
+   [2, 4, 6]
+
+   >>> [n for n in numbers if n % 2]
+   [1, 3]
+
+----
+
+Replace the brackets with parens, and you have a **generator expression**:
+
+.. set up fib_under_20
+
+   >>> fib_under_20 = takewhile(lambda x: x < 20, fibonacci())
+
+.. code:: pycon
+
+   >>> odd_fib_under_20 = (n for n in fib_under_20 if n % 2)
+
+Looks just like a list comprehension, but doesn't build the full list in
+memory; returns a generator which lazily waits to be iterated over.
+
+.. note::
+
+   A generator expression is a very concise way to transform each element in an
+   iterator, and/or filter an iterator. (Can replace the ``filter`` built-in,
+   as we see here).
+
+----
+
+:data-reveal: 1
+
+__iter__() as a generator
+-------------------------
+
+* The ``__iter__()`` method on your iterable class must return an iterator.
+
+* Generator functions return an iterator!
+
+----
+
+:data-emphasize-lines-step: 6,7,13
+
+.. code:: python
+   :number-lines:
+
+   class ErrorList:
+       def __init__(self):
+           self.errors = []
+
+       def __iter__(self):
+           for error in self.errors:
+               yield error
+
+or, even shorter:
+
+.. code:: python
+   :number-lines:
+
+   class ErrorList:
+       def __init__(self):
+           self.errors = []
+
+       def __iter__(self):
+           return iter(self.errors)
+
+----
+
+Iterators & generators
+----------------------
+
+* Good to understand the underlying iterator protocol, but generators and
+  generator expressions will do most of what you need.
+
+* Can write data pipelines that handle long, even infinite, streams one element
+  at a time, without ever bringing all data into memory.
+
+* Can make your own classes iterable by giving them an ``__iter__()`` method.
+
+----
+
 :id: questions
 
 Questions?
