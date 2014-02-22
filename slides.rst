@@ -1431,7 +1431,9 @@ Replace the brackets with parens, and you have a **generator expression**:
 
 .. code:: pycon
 
-   >>> odd_fib_under_20 = (n for n in fib_under_20 if n % 2)
+   >>> odd_fib = (n for n in fibonacci() if n % 2)
+
+   >>> doubled_fib = (n*2 for n in fibonacci())
 
 Looks just like a list comprehension, but doesn't build the full list in
 memory; returns a generator which lazily waits to be iterated over.
@@ -1492,6 +1494,92 @@ Iterators & generators
   at a time, without ever bringing all data into memory.
 
 * Can make your own classes iterable by giving them an ``__iter__()`` method.
+
+----
+
+Metaclasses
+-----------
+
+    “Metaclasses are deeper magic than 99% of users should ever worry about. If
+    you wonder whether you need them, you don't.”
+
+    -- Tim Peters, comp.lang.python
+
+.. note::
+
+   This quote is basically obligatory at this point in any discussion of Python
+   metaclasses.
+
+   That's because it is truth.
+
+   But metaclasses are fun! So we'll talk about them anyway.
+
+----
+
+:data-reveal: 1
+
+Metaclasses
+-----------
+
+* Python classes are objects, just like any other object.
+
+* Thus, just like ``luigi`` is an instance of ``Person``, the ``Person`` class
+  itself is an instance of ``type``!
+
+* A class' class is called its "metaclass"; the default metaclass is ``type``.
+
+* (And yes, ``type`` itself is an instance of ``type``. It's types all the way
+  down.)
+
+----
+
+Types all the way down
+----------------------
+
+.. code:: pycon
+
+   >>> class Person: pass
+
+   >>> luigi = Person()
+
+   >>> luigi.__class__
+   <class 'Person'>
+
+   >>> Person.__class__
+   <class 'type'>
+
+   >>> type.__class__
+   <class 'type'>
+
+----
+
+:data-emphasize-lines-step: 10,11,12
+
+Normally we create classes with a ``class`` statement.
+
+But just as we can create an instance of ``Person`` with ``luigi = Person()``,
+we can call ``type()`` to create a class:
+
+.. code:: python
+   :number-lines:
+
+   class Singer(Person):
+       activity = 'singing'
+
+       def do(self):
+           return self.activity
+
+.. code:: python
+   :number-lines:
+
+   def do(self):
+       return self.activity
+
+   Singer = type(
+       "Singer",
+       (Person,),
+       {'activity': 'singing', 'do': do},
+       )
 
 ----
 

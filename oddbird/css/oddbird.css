@@ -164,12 +164,12 @@ html {
 html {
   font-family: "BaskervilleFS", Baskerville, Palatino, Cambria, Georgia, serif;
   text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
-  background: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, rgba(51, 203, 255, 0.25)), color-stop(75%, rgba(204, 242, 255, 0.25))) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
-  background: -webkit-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
-  background: -moz-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
-  background: -o-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
-  background: linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
-  background: linear-gradient(to top, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1392662518') repeat fixed;
+  background: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, rgba(51, 203, 255, 0.25)), color-stop(75%, rgba(204, 242, 255, 0.25))) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
+  background: -webkit-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
+  background: -moz-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
+  background: -o-linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
+  background: linear-gradient(bottom, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
+  background: linear-gradient(to top, rgba(51, 203, 255, 0.25), rgba(204, 242, 255, 0.25) 75%) no-repeat, url('../images/noise.png?1362240577') repeat fixed;
   height: 100%;
   color: #265f73;
 }
@@ -4899,4 +4899,8 @@ h2 tt {
 }
 #thistalk img {
   float: right;
+}
+
+blockquote {
+  font-style: italic;
 }

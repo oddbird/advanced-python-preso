@@ -40,4 +40,6 @@ $(function () {
       slide.find('.innerStep').removeClass('last').filter('.stepped').last().addClass('last');
     });
   });
+
+  $('.cite .cite_label').html('&mdash; ');
 });
