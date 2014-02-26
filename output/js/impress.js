@@ -555,11 +555,13 @@
             prev = prev >= 0 ? steps[ prev ] : steps[ steps.length-1 ];
             
             // when backing through a slide, clear its inner steps
+            var stepped_back = false;
             $$('.innerStep.stepped', activeStep).forEach( function (elem) {
                 elem.classList.remove('stepped');
+                stepped_back = true;
             });
             
-            return goto(prev);
+          if (!stepped_back) { return goto(prev); }
         };
         
         var inner = {
