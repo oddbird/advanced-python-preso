@@ -14,7 +14,6 @@
 $(function () {
   $('.step').each(function () {
     var slide = $(this);
-    var nums = slide.attr('data-emphasize-lines');
     var stepNums = slide.attr('data-emphasize-lines-step');
     var linenos = slide.find('.code .ln');
     var emphasizeLine = function (num) {
@@ -24,14 +23,10 @@ $(function () {
     if (!slide.data('keep-linenos')) {
       linenos.html('');
     }
-    if (nums) {
-      nums.split(',').forEach(function (num) {
-        emphasizeLine(num);
-      });
-    }
     if (stepNums) {
       stepNums.split(',').forEach(function (num) {
         var emph = emphasizeLine(num);
+        $('<span class="emphasized marker">&nbsp;</span>').insertBefore(emph);
         emph.addClass('innerStep');
       });
     }

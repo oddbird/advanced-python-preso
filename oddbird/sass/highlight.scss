@@ -98,11 +98,16 @@ $green    : #859900;
 .emphasized {
   display: block;
   position: absolute;
-  width: 100%;
+  width: 0%;
   left: 0;
   right: 0;
+  background: rgba($magenta, 0.15);
+  }
+
+.emphasized.marker {
+  width: 1%;
   }
 
 .emphasized.last {
-  background: rgba($magenta, 0.15);
+  width: 100%;
   }

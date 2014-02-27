@@ -351,11 +351,16 @@
 .emphasized {
   display: block;
   position: absolute;
-  width: 100%;
+  width: 0%;
   left: 0;
   right: 0;
+  background: rgba(211, 54, 130, 0.15);
+}
+
+.emphasized.marker {
+  width: 1%;
 }
 
 .emphasized.last {
-  background: rgba(211, 54, 130, 0.15);
+  width: 100%;
 }
