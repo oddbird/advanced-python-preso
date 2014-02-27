@@ -561,7 +561,7 @@
                 stepped_back = true;
             });
             
-          if (!stepped_back) { return goto(prev); }
+            if (!stepped_back) { return goto(prev); }
         };
         
         var inner = {
