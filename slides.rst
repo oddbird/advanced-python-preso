@@ -34,8 +34,6 @@ This talk
 
 * Generators
 
-* Metaclasses
-
 .. 30 seconds.
 
 ----
