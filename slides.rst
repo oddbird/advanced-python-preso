@@ -276,7 +276,6 @@ A real example
    :number-lines:
 
    def login_required(view_func):
-       @wraps(view_func)
        def decorated(request, *args, **kwargs):
            if not request.user.is_authenticated():
                return redirect('/login/')
@@ -491,6 +490,8 @@ Convenience method
 
 Example: transaction API
 ------------------------
+
+.. ignore-next-block
 
 .. code:: python
    :number-lines:
@@ -1171,7 +1172,7 @@ Fibonacci generator
    >>> fib
    <generator object fibonacci at 0x...>
 
-   >>> list(itertools.takewhile(lambda x: x < 20, fib))
+   >>> list(takewhile(lambda x: x < 20, fib))
    [1, 1, 2, 3, 5, 8, 13]
 
 .. note::
