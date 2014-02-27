@@ -49,9 +49,9 @@ How
 
 * Example(s)
 
-* Just a taste!
-
 * Cautions?
+
+* Areas to explore
 
 * Link to docs
 
@@ -85,12 +85,15 @@ Me
 
 ----
 
+:data-emphasize-lines-step: 1,5,6,7,10
+
 Decorators
 ==========
 
 Python functions are first class:
 
 .. code:: pycon
+   :number-lines:
 
    >>> def say_hi():
    ...     print("Hi!")
@@ -117,7 +120,7 @@ Python functions are first class:
 ----
 
 :data-reveal: 1
-:data-emphasize-lines-step: 3,5,11,13
+:data-emphasize-lines-step: 1,2,3,4,5,6,8,11,12,13
 
 Decorator
 ---------
@@ -182,6 +185,8 @@ we can write:
 
 ----
 
+:data-emphasize-lines-step: 1,2,3,4
+
 Either way:
 -----------
 
@@ -192,83 +197,6 @@ Either way:
    Before
    Hi!
    After
-
-----
-
-:data-emphasize-lines-step: 2,6
-
-But:
-----
-
-.. for some reason doctest chokes on the help() call here
-.. ignore-next-block
-.. code:: pycon
-   :number-lines:
-
-   >>> say_hi
-   <function noisy.<locals>.decorated at 0x...>
-
-   >>> help(say_hi)
-   Help on function decorated:
-   decorated()
-
-.. note::
-
-   The help and repr for our function now say nothing about ``say_hi``, they
-   claim that it's the inner function returned from the decorator.
-
-   Which it is!
-
-   But we'd like to hide this and treat it as if it were the original function.
-
-----
-
-:data-emphasize-lines-step: 1,4
-
-Fixing ``repr()`` and ``help()``
---------------------------------
-
-.. code:: python
-   :number-lines:
-
-   from functools import wraps
-
-   def noisy(func):
-       @wraps(func)
-       def decorated():
-           print("Before")
-           func()
-           print("After")
-       return decorated
-
-.. note::
-
-   Python standard library has a decorator that helps us make decorators!
-
-   Copies the function name and docstring of the decorated function onto the
-   decorator, so it isn't obscured.
-
-----
-
-:data-emphasize-lines-step: 7,11
-
-Fixed!
-------
-
-.. code:: pycon
-   :number-lines:
-
-   >>> @noisy
-   ... def say_hi():
-   ...     print("Hi!")
-   ...
-
-   >>> say_hi
-   <function say_hi at 0x...>
-
-   >>> help(say_hi)
-   Help on function say_hi:
-   say_hi()
 
 ----
 
@@ -293,10 +221,34 @@ Oops!
 
 ----
 
-:data-emphasize-lines-step: 3,5
+:data-emphasize-lines-step: 2,4
 
-Use ``*args`` and ``**kwargs``
-------------------------------
+The cause
+---------
+
+.. code:: python
+   :number-lines:
+
+   def noisy(func):
+       def decorated():
+           print("Before")
+           func()
+           print("After")
+       return decorated
+
+.. note::
+
+   Our wrapper decorated function takes no arguments, and passes none on to the
+   wrapped function.
+
+   So it can only wrap functions that require no arguments.
+
+----
+
+:data-emphasize-lines-step: 2,4
+
+The fix: ``*args`` and ``**kwargs``
+------------------------------------
 
 to write decorators that can wrap any function signature:
 
@@ -304,7 +256,6 @@ to write decorators that can wrap any function signature:
    :number-lines:
 
    def noisy(func):
-       @wraps(func)
        def decorated(*args, **kwargs):
            print("Before")
            func(*args, **kwargs)
@@ -342,125 +293,6 @@ A real example
 
    Simplified from the actual implementation.
 
-   Here we are hardcoding the login URL to redirect to.
-
-----
-
-:data-emphasize-lines-step: 1,2,6,9,11
-
-Configurable decorators
------------------------
-
-.. code:: python
-   :number-lines:
-
-   def login_required(login_url):
-       def actual_decorator(view_func):
-           @wraps(view_func)
-           def decorated(request, *args, **kwargs):
-               if not request.user.is_authenticated():
-                   return redirect(login_url)
-               return view_func(request, *args, **kwargs)
-           return decorated
-       return actual_decorator
-
-   @login_required('/login/')
-   def edit_profile(request):
-       pass # ...
-
-.. note::
-
-   A decorator that takes arguments is really a decorator factory: a function
-   that returns a decorator.
-
-   And a decorator, of course, is a function that returns a function: so we end
-   up with double-nested closures.
-
-----
-
-:data-emphasize-lines-step: 1,9,10,13,17
-
-Optionally configurable
------------------------
-
-.. code:: python
-   :number-lines:
-
-   def login_required(view_func=None, login_url='/login/'):
-       def actual_decorator(func):
-           @wraps(func)
-           def decorated(request, *args, **kwargs):
-               if not request.user.is_authenticated():
-                   return redirect(login_url)
-               return func(request, *args, **kwargs)
-           return decorated
-       if view_func is not None:
-           return actual_decorator(view_func)
-       return actual_decorator
-
-   @login_required
-   def view_profile(request):
-       pass # ...
-
-   @login_required(login_url='/other_login/')
-   def edit_profile(request):
-       pass # ...
-
-.. note::
-
-   Combining the last two forms of decorators, returning either a decorator, or
-   an already-decorated view function, depending what arguments we get.
-
-   Could avoid the implementation complexity if we didn't mind a pair of empty
-   parens in the first usage, but requiring those makes it easier to use the
-   decorator wrong.
-
-   This requires passing in login_url as a keyword argument, we could be even
-   cleverer if we want by type-checking the first argument (is it a function?
-   is it a string?)
-
-----
-
-:data-emphasize-lines-step: 4,6,7,8,9
-
-With lazy return values:
--------------------------
-
-.. code:: python
-   :number-lines:
-
-   def sort(func):
-       @wraps(func)
-       def decorated(request, *args, **kwargs):
-           sort_by = request.GET.get('sort')
-           response = func(request, *args, **kwargs)
-           if sort_by:
-               ctx = response['context']
-               ctx['queryset'] = ctx['queryset'].order_by(
-                   sort_by)
-           return response
-       return decorated
-
-   @sort
-   def list_widgets(request):
-       return TemplateResponse(
-           request,
-           'widget_list.html',
-           {'queryset': Widget.objects.all()},
-           )
-
-.. note::
-
-   TemplateResponse renders an HTML template lazily.
-
-   Our decorator can poke at the context before the template is rendered, to
-   sort the queryset.
-
-   This decorator can provide generic sortability to any view that renders a
-   queryset in its template.
-
-   (Needs error handling.)
-
 ----
 
 :data-reveal: 1
@@ -486,15 +318,37 @@ Cautions
 
 :data-reveal: 1
 
+Further exploration
+-------------------
+
+* Using ``functools.wraps`` to preserve the name and docstring of the decorated
+  function.
+
+* Configurable decorators, or decorators with arguments (really decorator
+  factories).
+
+* *Optionally* configurable decorators (might be a decorator factory, might be
+  a decorator, depending how it's used).
+
+----
+
+:data-reveal: 1
+:data-emphasize-lines-step: 1,2
+
 Context managers
 ----------------
 
 .. code:: python
+   :number-lines:
 
    with open('somefile.txt', 'w') as fh:
        fh.write('contents\n')
 
-* Like decorators, allow before/after actions.
+Opens the file, then executes the block, then closes the file.
+
+* Even if an exception was raised in the block.
+
+* Like decorators, allow wrapping code with before/after actions.
 
 * But around any block of code, not just functions.
 
@@ -520,20 +374,18 @@ we can write:
    with open('somefile.txt', 'w') as fh:
        fh.write('contents\n')
 
-The context manager closes the file after the block.
-
 .. note::
 
    More concise syntax for resource management / cleanup.
 
 ----
 
-:data-emphasize-lines-step: 2,6,7,8,10,11,13
+:data-emphasize-lines-step: 2,6,7,8,10,11,14
 
 Writing a context manager
 -------------------------
 
-If ``open()`` weren't already a context manager, we might write one:
+If ``open`` weren't already a context manager, we might write one:
 
 .. code:: python
    :number-lines:
@@ -565,7 +417,7 @@ If ``open()`` weren't already a context manager, we might write one:
 
 ----
 
-:data-emphasize-lines-step: 7,9,12,16
+:data-emphasize-lines-step: 3,5,6,7,8,9,11,12,13,14,15,16
 
 Exception handling
 ------------------
@@ -602,7 +454,7 @@ Exception handling
 
 ----
 
-:data-emphasize-lines-step: 1,3,7,8
+:data-emphasize-lines-step: 1,3,4,5,7,8,9,12
 
 Convenience method
 ------------------
@@ -637,6 +489,41 @@ Convenience method
 
 ----
 
+:data-emphasize-lines-step: 3,4,5
+
+Example: transaction API
+------------------------
+
+.. code:: python
+   :number-lines:
+
+   from django.db import transaction
+
+   with transaction.atomic():
+       write_to_the_database()
+       write_to_the_database_some_more()
+
+Opens a database transaction on enter, commits it on exit (or rolls it back if
+there was an exception).
+
+----
+
+:data-emphasize-lines-step: 1,3,4,5
+
+Example: test assertion
+-----------------------
+
+.. code:: python
+   :number-lines:
+
+   import pytest
+
+   def test_cannot_divide_by_zero():
+       with pytest.raises(ZeroDivisionError):
+          1 / 0
+
+----
+
 :data-reveal: 1
 
 Cautions
@@ -646,7 +533,8 @@ Cautions
 
 * Context managers are awesome.
 
-* Use them anywhere you need to manage resource life-cycles; setup/teardown.
+* Use them anywhere you need to manage resource life-cycles; setup/teardown;
+  entry/exit.
 
 ----
 
@@ -655,7 +543,7 @@ Descriptors
 
 ----
 
-:data-emphasize-lines-step: 7,10,15
+:data-emphasize-lines-step: 1,5,7,10,12,15,20
 
 Attributes are simple:
 
@@ -708,7 +596,7 @@ Python is not Java
 
 ----
 
-:data-emphasize-lines-step: 3,7,11
+:data-emphasize-lines-step: 2,3,4,6,7,8,10,11,12
 
 .. code:: python
    :number-lines:
@@ -738,7 +626,7 @@ Python is not Java
 
 ----
 
-:data-emphasize-lines-step: 2,7,10,14
+:data-emphasize-lines-step: 1,2,4,6,7,9,10,12,13,16,17
 
 .. code:: pycon
    :number-lines:
@@ -750,6 +638,9 @@ Python is not Java
 
    >>> luigi.name = "Luigi"
    Setting to Luigi
+
+   >>> luigi._val
+   'Luigi'
 
    >>> luigi.name
    Getting
@@ -767,7 +658,7 @@ Python is not Java
 
 ----
 
-Head Asplode
+Head asplode
 ------------
 
 * Descriptors are extremely powerful.
@@ -779,7 +670,7 @@ Head Asplode
 
 ----
 
-:data-emphasize-lines-step: 6,12,17
+:data-emphasize-lines-step: 1,3,4,6,7,8,9,10,12,17
 
 calculated property
 -------------------
@@ -822,7 +713,7 @@ calculated property
 
 ----
 
-:data-emphasize-lines-step: 4,6,7,9,18
+:data-emphasize-lines-step: 1,2,3,4,6,7,8,9,14,16,18
 
 boolean-only attribute
 ----------------------
@@ -868,41 +759,7 @@ boolean-only attribute
 
    If not, raise a ValueError.
 
-   (``deleter`` and ``getter`` also available.)
-
-----
-
-:data-emphasize-lines-step: 2,5,11
-
-alternate spelling
-------------------
-
-.. code:: python
-   :number-lines:
-
-   class User:
-       def _get_is_admin(self):
-           return self._is_admin
-
-       def _set_is_admin(self, val):
-           if val not in {True, False}:
-               raise ValueError(
-                   'is_admin must be True or False')
-           self._is_admin = val
-
-       is_admin = property(_get_is_admin, _set_is_admin)
-
-.. note::
-
-   If you find the decorators for getter/setter properties hard to grok, you
-   might find this alternate spelling clearer.
-
-   Just define the getter and setter with private names and pass in to the
-   property constructor.
-
-   Same effect as before.
-
-   Can pass in a deleter method as third arg.
+   (``deleter`` is also available.)
 
 ----
 
@@ -916,7 +773,7 @@ Descriptors & properties
 * Descriptor protocol is fundamental to Python's object model: used internally
   to implement bound methods, staticmethods, classmethods...
 
-* For most cases ``property`` is simpler than a custom descriptor class.
+* For most cases ``@property`` is simpler than a custom descriptor class.
 
 * In Python 2, can only be used with "new-style" classes (inherit ``object``).
 
@@ -927,10 +784,13 @@ Iterables, iterators, & generators, oh my!
 
 ----
 
+:data-emphasize-lines-step: 1,3,4,5,6,7
+
 Iteration is simple.
 --------------------
 
 .. code:: pycon
+   :number-lines:
 
    >>> numbers = [1, 2, 3]
 
@@ -952,7 +812,7 @@ Iteration is simple.
 What is **iterable**?
 ---------------------
 
-* List, set, tuple, dict...
+* Builtin types: list, set, tuple, dict...
 
 * Any object with an ``__iter__`` method.
 
@@ -977,12 +837,14 @@ What is **iterable**?
 Ok, what's an **iterator**?
 ---------------------------
 
-* An **iterator** keeps track of where we are in iterating over some
-  collection.
+* An **iterator** keeps track of where we are in iterating over some iterable.
+
+* Only goes one direction (forward) and is one-and-done; no rewinding.
 
 * Has a ``__next__()`` method that gives us the next item when we ask for it.
 
-* Raises a ``StopIteration`` exception when there are no more items.
+* ``__next__()`` raises a ``StopIteration`` exception when there are no more
+  items.
 
 * Used internally every time you use ``for ... in``, but usually hidden.
 
@@ -1007,14 +869,14 @@ An aside: magic methods
   (e.g. ``__str__()``), attribute access (e.g. ``__getattr__()``), descriptors
   (``__get__()`` et al). Look up the full list!
 
-* the iterable (``__iter__()``) and iterator (``__next__()``) protocols.
+* The iterable (``__iter__()``) and iterator (``__next__()``) protocols.
 
 * As with ``len()``, there are ``iter()`` and ``next()`` built-ins;
   ``iter(obj)`` just calls ``obj.__iter__()``.
 
 ----
 
-:data-emphasize-lines-step: 6,9,12,15,19
+:data-emphasize-lines-step: 1,3,6,9,12,15,19
 
 an iterator sighting!
 ---------------------
@@ -1054,12 +916,12 @@ an iterator sighting!
 
 ----
 
-:data-emphasize-lines-step: 1,4,6
+:data-emphasize-lines-step: 1,4,5,6,7
 
 The true story of a for loop
 ----------------------------
 
-So what really happens when I ``for x in numbers: print(x)``?
+What really happens when we ``for x in numbers: print(x)``:
 
 .. code:: python
    :number-lines:
@@ -1079,10 +941,10 @@ So what really happens when I ``for x in numbers: print(x)``?
 
 ----
 
-:data-emphasize-lines-step: 8,11
+:data-emphasize-lines-step: 1,3,5,8,11,16,17,18,19
 
-two iterators, one list
------------------------
+Iterator independence
+---------------------
 
 .. code:: pycon
    :number-lines:
@@ -1151,14 +1013,14 @@ This means an iterator is also iterable (but one-shot).
 
 ----
 
-let's try writing our own
+Let's try writing our own
 -------------------------
 
 ----
 
-:data-emphasize-lines-step: 6,11
+:data-emphasize-lines-step: 3,4,6,7,8,9,11,12,13,15,16
 
-a fibonacci iterator
+A fibonacci iterator
 ---------------------
 
 .. code:: python
@@ -1167,11 +1029,11 @@ a fibonacci iterator
    class Fibonacci:
        def __init__(self):
            self.last = 0
-           self.next = 1
+           self.curr = 1
 
        def __next__(self):
-           self.last, self.next = (
-               self.next, self.last + self.next)
+           self.last, self.curr = (
+               self.curr, self.last + self.curr)
            return self.last
 
        def __iter__(self):
@@ -1234,55 +1096,6 @@ itertools: iterator plumbing
 
 ----
 
-more usefully
--------------
-
-.. setup a process_lines function
-
-   >>> processed = []
-
-   >>> def process_line(line):
-   ...     processed.append(line.strip())
-
-.. code:: python
-
-   import itertools
-
-   def get_interesting_lines(fh):
-       no_header = itertools.dropwhile(
-           lambda line: "START BODY" not in line, fh)
-       next(no_header)
-
-       body_only = itertools.takewhile(
-           lambda line: "END BODY" not in line, no_header)
-
-       interesting_lines = filter(
-           lambda line: not line.startswith('#'), body_only)
-
-       return interesting_lines
-
-   with open('gigantic_file.txt') as fh:
-       for line in get_interesting_lines(fh):
-           process_line(line)
-
-
-.. check the results
-
-   >>> processed
-   ['line one', 'line two']
-
-.. note::
-
-   File objects are iterators yielding lines. So we can process a massive file
-   one line at a time, using itertools to filter down to only lines that we
-   care about.
-
-   And we can build up logical building blocks (pipe segments) like our
-   "get_interesting_lines" filter that can operate on streams one element at a
-   time.
-
-----
-
 :data-reveal: 1
 
 Generators
@@ -1305,7 +1118,7 @@ Generators
 
 ----
 
-:data-emphasize-lines-step: 2,3,4,5,9,11,12,13,19,21
+:data-emphasize-lines-step: 2,3,4,5,9,11,12,13,15,16,17,19,21
 
 .. code:: python
    :number-lines:
@@ -1340,16 +1153,16 @@ Generators
 
 :data-emphasize-lines-step: 1,5,9,11,12
 
-fibonacci generator
+Fibonacci generator
 -------------------
 
 .. code:: python
    :number-lines:
 
    def fibonacci():
-       last, next = 0, 1
+       last, curr = 0, 1
        while True:
-           last, next = next, next + last
+           last, curr = curr, curr + last
            yield last
 
 .. code:: pycon
@@ -1370,10 +1183,13 @@ fibonacci generator
 
 ----
 
-re-implementing itertools.takewhile
+:data-emphasize-lines-step: 1,2,3,4,5
+
+Re-implementing itertools.takewhile
 -----------------------------------
 
 .. code:: python
+   :number-lines:
 
    def my_takewhile(predicate, iterator):
        for elem in iterator:
@@ -1396,9 +1212,13 @@ generator expressions
 
 ----
 
-A list comprehension is a concise expression to build/transform/filter a list:
+:data-emphasize-lines-step: 1,3,4,6,7
+
+A **list comprehension** is a concise expression to build/transform/filter a
+list:
 
 .. code:: pycon
+   :number-lines:
 
    >>> numbers = [1, 2, 3]
 
@@ -1410,20 +1230,21 @@ A list comprehension is a concise expression to build/transform/filter a list:
 
 ----
 
+:data-emphasize-lines-step: 1,3
+:data-reveal: 1
+
 Replace the brackets with parens, and you have a **generator expression**:
 
-.. set up fib_under_20
-
-   >>> fib_under_20 = takewhile(lambda x: x < 20, fibonacci())
-
 .. code:: pycon
+   :number-lines:
 
    >>> odd_fib = (n for n in fibonacci() if n % 2)
 
    >>> doubled_fib = (n*2 for n in fibonacci())
 
-Looks just like a list comprehension, but doesn't build the full list in
-memory; returns a generator which lazily waits to be iterated over.
+* Looks like a list comprehension, but doesn't build the full list in memory.
+
+* Creates a generator which lazily waits to be iterated over.
 
 .. note::
 
@@ -1444,7 +1265,7 @@ __iter__() as a generator
 
 ----
 
-:data-emphasize-lines-step: 6,7,13
+:data-emphasize-lines-step: 3,6,7,13
 
 .. code:: python
    :number-lines:
@@ -1471,16 +1292,25 @@ or, even shorter:
 
 ----
 
+:data-reveal: 1
+
 Iterators & generators
 ----------------------
 
-* Good to understand the underlying iterator protocol, but generators and
-  generator expressions will do most of what you need.
+* Good to understand the underlying iterator protocol (``__next__()`` and
+  ``StopIteration``),
 
-* Can write data pipelines that handle long, even infinite, streams one element
-  at a time, without ever bringing all data into memory.
+* ...but generators (``yield``) and generator expressions will do most of what
+  you need.
+
+* Can write data pipelines that transform/filter very long (even infinite)
+  streams one element at a time,
+
+* ...without ever bringing all data into memory at once.
 
 * Can make your own classes iterable by giving them an ``__iter__()`` method.
+
+* Further exploration: dive into the ``itertools`` module!
 
 ----
 
@@ -1497,190 +1327,8 @@ Metaclasses
    This quote is basically obligatory at this point in any discussion of Python
    metaclasses.
 
-   That's because it is truth.
-
-   But metaclasses are fun! So we'll talk about them anyway.
-
-----
-
-:data-reveal: 1
-
-Metaclasses
------------
-
-* Python classes are objects, just like any other object.
-
-* Thus, just like ``luigi`` is an instance of ``Person``, the ``Person`` class
-  itself is an instance of ``type``!
-
-* A class' class is called its "metaclass"; the default metaclass is ``type``.
-
-* (And yes, ``type`` itself is an instance of ``type``. It's types all the way
-  down.)
-
-----
-
-Types all the way down
-----------------------
-
-.. code:: pycon
-
-   >>> class Person: pass
-
-   >>> luigi = Person()
-
-   >>> luigi.__class__
-   <class 'Person'>
-
-   >>> Person.__class__
-   <class 'type'>
-
-   >>> type.__class__
-   <class 'type'>
-
-----
-
-:data-emphasize-lines-step: 10,11,12
-
-Normally we create classes with a ``class`` statement.
-
-But just as we can create an instance of ``Person`` with ``luigi = Person()``,
-we can call ``type()`` to create a class:
-
-.. code:: python
-   :number-lines:
-
-   class Singer(Person):
-       activity = 'singing'
-
-       def do(self):
-           return self.activity
-
-.. code:: python
-   :number-lines:
-
-   def do(self):
-       return self.activity
-
-   Singer = type(
-       "Singer",
-       (Person,),
-       {'activity': 'singing', 'do': do},
-       )
-
-.. note::
-
-   First argument to type is the name of the class to build.
-
-   Second argument is a tuple of the classes to inherit from (can be empty).
-
-   Third argument is a dictionary of the class attributes (including methods).
-
-   This is equivalent to the local variables at the end of executing the body
-   of a `class` block.
-
-----
-
-:data-emphasize-lines-step: 1,2,3,4,5,6,7,9,10,11
-
-make your own metaclass
------------------------
-
-.. code:: python
-   :number-lines:
-
-   class NoisyMetaclass(type):
-       def __new__(cls, name, bases, attrs, **kwds):
-           print("Creating a class named {}".format(name))
-           print("It inherits from {}".format(bases))
-           print("It has attributes {}".format(attrs))
-           return type.__new__(cls, name, bases, attrs, **kwds)
-
-.. code:: pycon
-   :number-lines:
-
-   >>> class Person(metaclass=NoisyMetaclass):
-   ...     activity = 'rowing'
-   Creating a class named Person
-   It inherits from ()
-   It has attributes {...'activity': 'rowing'...}
-
-----
-
-:data-emphasize-lines-step: 3,4,5,6,11,12,19
-
-checking interfaces
--------------------
-
-.. code:: python
-   :number-lines:
-
-   class RequireMethods(type):
-       def __new__(cls, name, bases, attrs):
-           new_cls = type.__new__(cls, name, bases, attrs)
-           for method in new_cls.required_methods:
-               if method not in attrs:
-                   raise TypeError(
-                       "{} class must implement '{}'.".format(
-                           name, method))
-           return new_cls
-
-   class Command(metaclass=RequireMethods):
-       required_methods = {'run'}
-
-       def run(self):
-           raise NotImplementedError()
-
-.. code:: pycon
-   :number-lines:
-
-   >>> class Install(Command):
-   ...     pass
-   Traceback (most recent call last):
-   TypeError: Install class must implement 'run'.
-
-.. note::
-
-   For example, we could use a metaclass if we have a base class that others
-   will be subclassing, and we want to require them to override certain methods
-   in their subclass.
-
-----
-
-ORM field definitions
----------------------
-
-.. ignore-next-block
-.. code:: python
-
-   class Person(models.Model):
-       name = models.CharField()
-       age = models.IntegerField()
-
-.. note::
-
-   This syntax is based on the Django ORM, but other ORMs (e.g. SQLAlchemy)
-   provide similar declarative syntax for defining your db schema.
-
-   In this case the ORM needs to know what fields are in the person table, and
-   so it would use a metaclass on the base ``Model`` class to hook into the
-   creation of any subclass of ``Model``.
-
-----
-
-:data-reveal: 1
-
-Metaclass notes
----------------
-
-* You probably don't want to use them.
-
-* In Python 2, specify a metaclass with the ``__metaclass__`` class attribute,
-  not a ``metaclass`` keyword argument in the bases list.
-
-* Python 3 metaclasses can also define a ``__prepare__()`` method to hook in
-  even earlier, before the class body is executed. Useful if you need to record
-  the order that class attributes were given.
+   Because of that, and because it's just too much to cover, we'll leave it
+   there - metaclasses will go on the "further exploration" list.
 
 ----
 
@@ -1689,20 +1337,17 @@ Metaclass notes
 Review
 ======
 
-* **Decorators** let you share pre- and post- behaviors between functions.
+* **Decorators**: reuse common pre- and post- behaviors across many functions.
 
-* **Context managers** let you run setup and teardown code around any block of
-  code.
+* **Context managers**: run setup and teardown around any block of code.
 
-* **Descriptors** (and **property**) let you customize attribute access on your
+* **Descriptors** (and **@property**): customize attribute access on your
   classes.
 
-* **Iterators** and **generators** let you customize iteration behavior of your
-  classes, and process/filter/transform data streams lazily one item at a time.
+* **Iterators** and **generators**: make your classes iterable, and
+  process/filter/transform data streams lazily one item at a time.
 
-* **Metaclasses** let you hook into the process of creating a class.
-
-* We only scratched the surface; go read the docs and have fun!
+* **Metaclasses** are deep magic.
 
 ----
 
